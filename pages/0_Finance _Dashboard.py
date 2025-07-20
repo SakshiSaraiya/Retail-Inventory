@@ -44,7 +44,7 @@ st.markdown("### 📊 Financial Summary")
 # -------------------------
 try:
     conn = get_connection()
-    products = pd.read_sql("SELECT * FROM Product WHERE user_id = %s", conn, params=(user_id,))
+    products = pd.read_sql("SELECT * FROM Products WHERE user_id = %s", conn, params=(user_id,))
     purchases = pd.read_sql("SELECT * FROM Purchases WHERE user_id = %s", conn, params=(user_id,))
     sales = pd.read_sql("SELECT * FROM Sales WHERE user_id = %s", conn, params=(user_id,))
 except Exception as e:
