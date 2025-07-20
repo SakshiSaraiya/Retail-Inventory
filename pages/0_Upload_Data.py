@@ -114,7 +114,7 @@ with st.expander("➕ Add Purchase Manually"):
         cost_price = st.number_input("Cost Price", min_value=0.0)
         order_date = st.date_input("Order Date")
         payment_due = st.date_input("Payment Due Date")
-        payment_status = st.selectbox("Payment Status", ["Pending", "Completed"])
+        payment_status = st.selectbox("Payment Status", ["Pending", "Completed","Overdue"])
         submit = st.form_submit_button("Add Purchase")
         if submit:
             query = """
