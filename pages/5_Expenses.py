@@ -121,7 +121,7 @@ if st.session_state.get("show_form", False):
         if submit:
             try:
                 cursor.execute("""
-                    INSERT INTO Expenses (user_id, expense_date, category, expense_type, amount, description)
+                    INSERT INTO Expenses (user_id, expense_date, category,TYPE, amount, description)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """, (user_id, expense_date, category, expense_type, amount, description))
                 conn.commit()
