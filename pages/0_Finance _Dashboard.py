@@ -1,27 +1,52 @@
-
-import streamlit as st 
+import streamlit as st
 import pandas as pd
-import plotly.express as px
 import numpy as np
-from db_connector import get_connection
+import plotly.express as px
+from db import get_connection
+from auth import check_login
 
+# -------------------------
+# Authentication Check
+# -------------------------
+check_login()
+user_id = st.session_state.user_id
+
+# -------------------------
+# Page Config & Styling
+# -------------------------
 st.set_page_config(page_title="💰 Finance Dashboard", layout="wide")
+
+st.markdown("""
+    <style>
+        .main {
+            background-color: #F8FAFC;
+        }
+        .stApp {
+            background-color: #F8FAFC;
+        }
+        section[data-testid="stSidebar"] {
+            background-color: #0F172A;
+        }
+        section[data-testid="stSidebar"] .css-1v0mbdj, .css-10trblm {
+            color: white;
+        }
+        h1, h2, h3, h4, h5, h6, p {
+            color: #0F172A;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("📁 Financial Health Dashboard")
-
 st.markdown("### 📊 Financial Summary")
-
-# -------------------------
-# Connect to Database
-# -------------------------
-conn = get_connection()
 
 # -------------------------
 # Load Data
 # -------------------------
 try:
-    products = pd.read_sql("SELECT * FROM product", conn)
-    purchases = pd.read_sql("SELECT * FROM purchases", conn)
-    sales = pd.read_sql("SELECT * FROM sales", conn)
+    conn = get_connection()
+    products = pd.read_sql("SELECT * FROM Product WHERE user_id = %s", conn, params=(user_id,))
+    purchases = pd.read_sql("SELECT * FROM Purchases WHERE user_id = %s", conn, params=(user_id,))
+    sales = pd.read_sql("SELECT * FROM Sales WHERE user_id = %s", conn, params=(user_id,))
 except Exception as e:
     st.error("❌ Failed to fetch data from the database.")
     st.exception(e)
