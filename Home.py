@@ -1,21 +1,20 @@
 import streamlit as st 
 from auth import register_user, login_user
-import os
 
 # --- Page Config ---
 st.set_page_config(
     page_title="Home | Retail Management",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded" if st.session_state.get("is_logged_in", False) else "collapsed"
 )
 
 # --- Session State ---
 if "is_logged_in" not in st.session_state:
     st.session_state["is_logged_in"] = False
 if "user_id" not in st.session_state:
-    st.session_state.user_id = None
+    st.session_state["user_id"] = None
 
-# --- Styling ---
+# --- Custom Styling ---
 st.markdown("""
     <style>
     .block-container {
@@ -50,17 +49,35 @@ st.markdown("""
         color: #1E293B;
         margin: 2rem 0 1rem;
     }
-    .stButton>button {
-        background-color: #0F172A !important;
-        color: white !important;
+    .nav-card {
+        background-color: #0F172A;
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+    .nav-card h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+    }
+    .nav-card p {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        color: #E2E8F0;
+    }
+    .nav-card a button {
+        background-color: white;
+        color: #0F172A;
         border: none;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.2rem;
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
+        transition: 0.3s;
     }
-    .stButton>button:hover {
-        background-color: #1E293B !important;
+    .nav-card a button:hover {
+        background-color: #e2e8f0;
     }
     [data-testid="stSidebar"] {
         background-color: #0F172A;
@@ -72,35 +89,36 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Always Show Header + Features ---
+# --- Main Header ---
 st.markdown("<h1>Welcome to All-in-One Retail Management</h1>", unsafe_allow_html=True)
 st.markdown("<div class='subheading'>Your centralized platform for inventory, finance, and vendor performance insights.</div>", unsafe_allow_html=True)
 
+# --- Features Summary ---
 st.markdown("<div class='section-title'>Key Features</div>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
         <div class='feature-card'>
-            <h4> Inventory Management</h4>
+            <h4>📦 Inventory Management</h4>
             <p>Track stock levels, categories, reorder alerts.</p>
         </div>
     """, unsafe_allow_html=True)
 with col2:
     st.markdown("""
         <div class='feature-card'>
-            <h4> Sales & Profit Analysis</h4>
+            <h4>📊 Sales & Profit Analysis</h4>
             <p>Visual dashboards for revenue and trends.</p>
         </div>
     """, unsafe_allow_html=True)
 with col3:
     st.markdown("""
         <div class='feature-card'>
-            <h4> Smart Forecasting</h4>
+            <h4>📈 Smart Forecasting</h4>
             <p>Predict demand and optimize inventory costs.</p>
         </div>
     """, unsafe_allow_html=True)
 
-# --- Login/Register Section ---
+# --- Authentication ---
 if not st.session_state["is_logged_in"]:
     login_tab, register_tab = st.tabs(["🔐 Login", "📝 Register"])
 
@@ -134,8 +152,7 @@ if not st.session_state["is_logged_in"]:
             else:
                 st.error(message)
 
-# Quick Navigation Buttons (After Login)
-# -------------------------------
+# --- Post-Login Navigation ---
 if st.session_state["is_logged_in"]:
     st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 
@@ -153,15 +170,14 @@ if st.session_state["is_logged_in"]:
         col = nav_cols[idx % 3]
         with col:
             st.markdown(f"""
-                <div class='card'>
-                    <h4>{page['name']}</h4>
+                <div class='nav-card'>
+                    <h4>🔹 {page['name']}</h4>
                     <p>{page['desc']}</p>
-                    <div class='nav-button'>
-                        <a href='/{page['path']}' target='_self'><button>Go to {page['name']}</button></a>
-                    </div>
+                    <a href='/{page['path']}' target='_self'><button>Go to {page['name']}</button></a>
                 </div>
             """, unsafe_allow_html=True)
 
+    # Logout
     st.markdown("#### ")
     if st.button("Logout"):
         st.session_state["is_logged_in"] = False
