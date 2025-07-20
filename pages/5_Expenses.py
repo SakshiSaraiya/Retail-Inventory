@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-from db_connector import get_connection
-from auth import check_authentication
+from db import get_connection
 from datetime import date
 import plotly.express as px
+from auth import check_login
+
 
 # --- Page Config ---
 st.set_page_config(
@@ -12,10 +13,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Authentication ---
-user_id = check_authentication()
-if user_id is None:
-    st.stop()
+
+# -------------------------
+# Authentication Check
+# -------------------------
+check_login()
+user_id = st.session_state.user_id
 
 # --- Custom Styling ---
 st.markdown("""
