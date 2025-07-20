@@ -178,9 +178,9 @@ try:
     with col1:
         st.markdown('<div class="metric-card"><h3>Total Expenses</h3><h2>₹ {:,.2f}</h2></div>'.format(df['amount'].sum()), unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h3>Fixed Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['expense_type']=='Fixed']['amount'].sum()), unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h3>Fixed Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['TYPE']=='Fixed']['amount'].sum()), unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h3>Variable Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['expense_type']=='Variable']['amount'].sum()), unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h3>Variable Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['TYPE']=='Variable']['amount'].sum()), unsafe_allow_html=True)
 
     # Monthly Expense Trend
     df["month"] = pd.to_datetime(df["expense_date"]).dt.to_period("M").astype(str)
