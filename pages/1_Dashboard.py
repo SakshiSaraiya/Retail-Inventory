@@ -47,6 +47,8 @@ st.markdown(
 # -------------------------------
 check_login()
 
+st.title("📊 Retail Business Dashboard")
+st.markdown("Get a comprehensive overview of your sales, profit, inventory, and performance trends.")
 # -------------------------------
 # Load Data
 # -------------------------------
