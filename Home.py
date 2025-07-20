@@ -1,5 +1,6 @@
-import streamlit as st
+import streamlit as st 
 from auth import register_user, login_user
+import os
 
 # --- Page Config ---
 st.set_page_config(
@@ -137,13 +138,14 @@ if not st.session_state["is_logged_in"]:
 if st.session_state["is_logged_in"]:
     st.markdown("<div class='section-title'>Quick Navigation</div>", unsafe_allow_html=True)
 
+    # Navigation items (excluding Dashboard)
     nav_items = [
         ("📁 Upload Data", "pages/0_Upload_Data.py"),
         ("💰 Finance Dashboard", "pages/0_Finance_Dashboard.py"),
-        ("📦 Inventory", "pages/1_Inventory.py"),
-        ("📈 Sales", "pages/6_Sales.py"),
-        ("🛒 Purchases", "pages/4_Purchase.py"),
-        ("💸 Expenses", "pages/7_Expenses.py"),
+        ("📦 Inventory", "pages/3_Inventory.py"),
+        ("📈 Sales", "pages/4_Sales.py"),
+        ("🛒 Purchases", "pages/2_Purchase.py"),
+        ("💸 Expenses", "pages/5_Expenses.py"),
     ]
 
     cols = st.columns(3)
@@ -151,3 +153,8 @@ if st.session_state["is_logged_in"]:
         with cols[i % 3]:
             st.page_link(link, label=label)
 
+    st.markdown("#### ")
+    if st.button("Logout"):
+        st.session_state["is_logged_in"] = False
+        st.session_state["user_id"] = None
+        st.rerun()
