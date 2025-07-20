@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from db_connector import get_connection
+from auth import check_auth
+
+check_auth()
 
 st.set_page_config(page_title="Purchases", layout="wide")
 
@@ -76,9 +79,9 @@ conn = get_connection()
 # -------------------------
 # Load Data from SQL
 # -------------------------
-purchases = pd.read_sql("SELECT * FROM purchases", conn)
+purchases = pd.read_sql("SELECT * FROM Purchases", conn)
 purchases['order_date'] = pd.to_datetime(purchases['order_date'], errors='coerce')
-purchases['payment_due_date'] = pd.to_datetime(purchases['payment_due_date'], errors='coerce')
+purchases['payment_due'] = pd.to_datetime(purchases['payment_due'], errors='coerce')
 
 # -------------------------
 # Compute KPIs
@@ -130,14 +133,14 @@ with col4:
 # Sidebar Filters
 # -------------------------
 st.sidebar.header("Filter Purchases")
-product_filter = st.sidebar.multiselect("Product", purchases['product_name'].dropna().unique(), default=purchases['product_name'].unique())
+product_filter = st.sidebar.multiselect("Product ID", purchases['product_id'].dropna().unique(), default=purchases['product_id'].unique())
 vendor_filter = st.sidebar.multiselect("Vendor", purchases['vendor_name'].dropna().unique(), default=purchases['vendor_name'].unique())
 status_filter = st.sidebar.multiselect("Payment Status", purchases['payment_status'].dropna().unique(), default=purchases['payment_status'].unique())
 start_date = st.sidebar.date_input("Start Date", purchases['order_date'].min())
 end_date = st.sidebar.date_input("End Date", purchases['order_date'].max())
 
 filtered = purchases[
-    (purchases['product_name'].isin(product_filter)) &
+    (purchases['product_id'].isin(product_filter)) &
     (purchases['vendor_name'].isin(vendor_filter)) &
     (purchases['payment_status'].isin(status_filter)) &
     (purchases['order_date'] >= pd.to_datetime(start_date)) &
@@ -148,15 +151,13 @@ filtered = purchases[
 # Display Filtered Table
 # -------------------------
 st.markdown("<h4 style='margin-top:2rem;'>Purchase Records</h4>", unsafe_allow_html=True)
-expected_cols = ['product_id', 'product_name', 'category', 'vendor_name', 'quantity_purchased', 'cost_price', 'order_date', 'payment_due_date', 'payment_status']
-available_cols = [col for col in expected_cols if col in filtered.columns]
-st.dataframe(filtered[available_cols], use_container_width=True)
+st.dataframe(filtered, use_container_width=True)
 
 # ---------- Payment Alerts ----------
 st.markdown("<h3 style='margin-top:2rem; color:#334155;'>Payment Alerts</h3>", unsafe_allow_html=True)
 today = pd.to_datetime("today")
 pending = filtered[filtered['payment_status'].str.lower() == "pending"]
-overdue = filtered[(filtered['payment_status'].str.lower() != "paid") & (filtered['payment_due_date'] < today)]
+overdue = filtered[(filtered['payment_status'].str.lower() != "paid") & (filtered['payment_due'] < today)]
 
 col1, col2 = st.columns(2)
 
@@ -164,7 +165,7 @@ with col1:
     if not pending.empty:
         st.markdown("<div style='background-color:#FDE68A;padding:1rem;border-radius:0.5rem;'>", unsafe_allow_html=True)
         st.warning(f"Pending Payments: {len(pending)}")
-        st.dataframe(pending[['vendor_name', 'product_name', 'payment_due_date']], use_container_width=True)
+        st.dataframe(pending[['vendor_name', 'product_id', 'payment_due']], use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.success("No pending payments.")
@@ -173,7 +174,7 @@ with col2:
     if not overdue.empty:
         st.markdown("<div style='background-color:#FCA5A5;padding:1rem;border-radius:0.5rem;'>", unsafe_allow_html=True)
         st.error(f"Overdue Payments: {len(overdue)}")
-        st.dataframe(overdue[['vendor_name', 'product_name', 'payment_due_date']], use_container_width=True)
+        st.dataframe(overdue[['vendor_name', 'product_id', 'payment_due']], use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.success("No overdue payments.")
@@ -206,17 +207,17 @@ with col1:
 
 # Top Products Chart
 with col2:
-    product_summary = filtered.groupby('product_name')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
+    product_summary = filtered.groupby('product_id')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
     fig_product = px.bar(
         product_summary,
-        x='product_name',
+        x='product_id',
         y='quantity_purchased',
         title="Top Products by Purchase Volume",
         color='quantity_purchased',
         color_continuous_scale='Plasma'
     )
     fig_product.update_layout(
-        xaxis_title="Product", yaxis_title="Quantity",
+        xaxis_title="Product ID", yaxis_title="Quantity",
         font=dict(family="Segoe UI", size=14, color="#0F172A"),
         plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF"
     )
