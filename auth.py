@@ -45,3 +45,10 @@ def get_user_id(username_or_email):
     if user:
         return user[0]['user_id']
     return None
+
+
+def check_login():
+    if "user_id" not in st.session_state or not st.session_state.user_id:
+        st.warning("🚫 You must log in to access this page.")
+        st.stop()
+
