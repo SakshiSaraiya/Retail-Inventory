@@ -49,7 +49,7 @@ def handle_csv_upload(label, table_name, required_columns):
 def get_csv_download_button(label, df, filename):
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label=f"\ud83d\udcc4 Download Sample {label} CSV",
+        label=f" Download Sample {label} CSV",
         data=csv,
         file_name=filename,
         mime='text/csv',
@@ -60,7 +60,7 @@ def get_csv_download_button(label, df, filename):
 # PRODUCT SECTION
 # --------------------------
 st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.subheader("\ud83d\udce6 Upload or Enter Product Data")
+st.subheader("Upload or Enter Product Data")
 
 product_sample = pd.DataFrame({
     "NAME": ["T-shirt"],
@@ -93,7 +93,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # PURCHASE SECTION
 # --------------------------
 st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.subheader("\ud83d\udcc3 Upload or Enter Purchase Data")
+st.subheader(" Upload or Enter Purchase Data")
 
 purchase_sample = pd.DataFrame({
     "product_id": [1],
@@ -131,7 +131,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # SALES SECTION
 # --------------------------
 st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.subheader("\ud83d\udcb8 Upload or Enter Sales Data")
+st.subheader(" Upload or Enter Sales Data")
 
 sales_sample = pd.DataFrame({
     "product_id": [1],
