@@ -1,7 +1,7 @@
-
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 from db_connector import get_connection
+from auth import check_authentication
 from datetime import date
 import plotly.express as px
 
@@ -11,6 +11,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# --- Authentication ---
+user_id = check_authentication()
+if user_id is None:
+    st.stop()
 
 # --- Custom Styling ---
 st.markdown("""
@@ -78,7 +83,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Page Title ---
+# --- Title ---
 st.markdown("<h1>Expense Management</h1>", unsafe_allow_html=True)
 
 # --- DB Connection ---
@@ -113,9 +118,9 @@ if st.session_state.get("show_form", False):
         if submit:
             try:
                 cursor.execute("""
-                    INSERT INTO expenses (date, category, expense_type, amount, description)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (expense_date, category, expense_type, amount, description))
+                    INSERT INTO expenses (user_id, date, category, expense_type, amount, description)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (user_id, expense_date, category, expense_type, amount, description))
                 conn.commit()
                 st.success("Expense added successfully.")
             except Exception as e:
@@ -144,9 +149,9 @@ if uploaded_file:
 
         for _, row in df_upload.iterrows():
             cursor.execute("""
-                INSERT INTO expenses (date, category, expense_type, amount, description)
-                VALUES (%s, %s, %s, %s, %s)
-            """, tuple(row))
+                INSERT INTO expenses (user_id, date, category, expense_type, amount, description)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (user_id, row["date"], row["category"], row["expense_type"], row["amount"], row["description"]))
         conn.commit()
         st.success("Expenses uploaded successfully.")
     except Exception as e:
@@ -156,7 +161,12 @@ if uploaded_file:
 st.markdown("### Expense History & Summary")
 
 try:
-    df = pd.read_sql("SELECT date, category, expense_type, amount, description FROM expenses ORDER BY date DESC", conn)
+    df = pd.read_sql(f"""
+        SELECT date, category, expense_type, amount, description
+        FROM expenses
+        WHERE user_id = {user_id}
+        ORDER BY date DESC
+    """, conn)
     df["date"] = pd.to_datetime(df["date"]).dt.date
 
     st.dataframe(df, use_container_width=True)
@@ -169,7 +179,7 @@ try:
     with col3:
         st.markdown('<div class="metric-card"><h3>Variable Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['expense_type']=='Variable']['amount'].sum()), unsafe_allow_html=True)
 
-    # --- Monthly Trend Chart ---
+    # Monthly Expense Trend
     df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
     monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
 
