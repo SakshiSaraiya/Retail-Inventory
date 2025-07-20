@@ -134,23 +134,33 @@ if not st.session_state["is_logged_in"]:
             else:
                 st.error(message)
 
-# --- Navigation Section (After Login) ---
+# Quick Navigation Buttons (After Login)
+# -------------------------------
 if st.session_state["is_logged_in"]:
-    st.markdown("<div class='section-title'>Quick Navigation</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 
-    nav_items = [
-        ("📁 Upload Data", "0_Upload_Data"),
-        ("💰 Finance Dashboard", "0_Finance_Dashboard"),
-        ("📦 Inventory", "3_Inventory"),
-        ("📈 Sales", "4_Sales"),
-        ("🛒 Purchases", "2_Purchase"),
-        ("💸 Expenses", "5_Expenses"),
+    pages = [
+        {"name": "Upload Data", "desc": "Update your inventory, sales, or expense data.", "path": "Upload_Data"},
+        {"name": "Finance Dashboard", "desc": "Explore profit, margin, and working capital insights.", "path": "Finance_Dashboard"},
+        {"name": "Purchases", "desc": "View and analyze purchase history.", "path": "Purchases"},
+        {"name": "Inventory", "desc": "Monitor inventory levels and alerts.", "path": "Inventory"},
+        {"name": "Sales", "desc": "Analyze sales trends and forecasting.", "path": "Sales"},
+        {"name": "Expenses", "desc": "Manage and track operating costs.", "path": "Expenses"},
     ]
 
-    cols = st.columns(3)
-    for i, (label, page_name) in enumerate(nav_items):
-        with cols[i % 3]:
-            st.page_link(page=page_name, label=label, icon="➡️")
+    nav_cols = st.columns(3)
+    for idx, page in enumerate(pages):
+        col = nav_cols[idx % 3]
+        with col:
+            st.markdown(f"""
+                <div class='card'>
+                    <h4>{page['name']}</h4>
+                    <p>{page['desc']}</p>
+                    <div class='nav-button'>
+                        <a href='/{page['path']}' target='_self'><button>Go to {page['name']}</button></a>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
     st.markdown("#### ")
     if st.button("Logout"):
