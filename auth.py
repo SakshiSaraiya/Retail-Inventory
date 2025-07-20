@@ -1,3 +1,4 @@
+import streamlit as st
 import bcrypt
 from db import fetch_data, execute_query
 
