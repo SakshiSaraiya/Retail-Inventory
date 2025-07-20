@@ -81,7 +81,7 @@ start_date = st.sidebar.date_input("Start Date", sales['sales_date'].min())
 end_date = st.sidebar.date_input("End Date", sales['sales_date'].max())
 
 filtered_sales = sales[
-    (sales['product_name'].isin(product_filter)) &
+    (sales['Name'].isin(product_filter)) &
     (sales['sales_date'] >= pd.to_datetime(start_date)) &
     (sales['sales_date'] <= pd.to_datetime(end_date))
 ]
@@ -109,7 +109,7 @@ if filtered_sales.empty:
     st.warning("⚠️ No matching sales records found with current filters.")
 else:
     st.dataframe(
-        filtered_sales[['sale_id', 'sales_date', 'product_name', 'quantity_sold', 'revenue', 'profit', 'shipped', 'payment_received']],
+        filtered_sales[['sale_id', 'sales_date', 'Name', 'quantity_sold', 'revenue', 'profit', 'shipped', 'payment_received']],
         use_container_width=True
     )
 
@@ -119,16 +119,16 @@ else:
 st.markdown("---")
 st.markdown("### 🏆 Top-Selling Products")
 top_n = st.slider("Top N Products", 5, 20, 10)
-top_products = filtered_sales.groupby('product_name')[['quantity_sold', 'revenue', 'profit']].sum().reset_index()
+top_products = filtered_sales.groupby('Name')[['quantity_sold', 'revenue', 'profit']].sum().reset_index()
 top_products = top_products.sort_values(by='quantity_sold', ascending=False).head(top_n)
 
 col1, col2 = st.columns(2)
 with col1:
-    fig1 = px.bar(top_products, x='product_name', y='quantity_sold', title=f"Top {top_n} by Quantity", color='quantity_sold', color_continuous_scale='Tealgrn')
+    fig1 = px.bar(top_products, x='Name', y='quantity_sold', title=f"Top {top_n} by Quantity", color='quantity_sold', color_continuous_scale='Tealgrn')
     st.plotly_chart(fig1, use_container_width=True)
 
 with col2:
-    fig2 = px.bar(top_products, x='product_name', y='revenue', title=f"Top {top_n} by Revenue", color='revenue', color_continuous_scale='Emrld')
+    fig2 = px.bar(top_products, x='Name', y='revenue', title=f"Top {top_n} by Revenue", color='revenue', color_continuous_scale='Emrld')
     st.plotly_chart(fig2, use_container_width=True)
 
 # ----------------------
@@ -148,9 +148,9 @@ st.plotly_chart(fig_combined, use_container_width=True)
 st.markdown("---")
 st.markdown("### 🔮 Forecasted Sales")
 
-available_products = sales['product_name'].dropna().unique()
+available_products = sales['Name'].dropna().unique()
 selected_product = st.selectbox("Select Product", sorted(available_products))
-forecast_sales = sales[sales['product_name'] == selected_product].copy()
+forecast_sales = sales[sales['Name'] == selected_product].copy()
 forecast_sales['month'] = forecast_sales['sales_date'].dt.to_period('M').astype(str)
 forecast_grouped = forecast_sales.groupby('month')['quantity_sold'].sum().reset_index()
 forecast_grouped['month'] = pd.to_datetime(forecast_grouped['month'], errors='coerce')
