@@ -74,7 +74,7 @@ sales['profit'] = sales['quantity_sold'] * (sales['selling_price'] - sales['cost
 # Sidebar Filters
 # ----------------------
 st.sidebar.header("🔍 Filter Sales")
-product_filter = st.sidebar.multiselect("Product", sales['product_name'].dropna().unique(), default=sales['product_name'].dropna().unique())
+product_filter = st.sidebar.multiselect("Product", sales['Name'].dropna().unique(), default=sales['product_name'].dropna().unique())
 shipped_filter = st.sidebar.selectbox("Shipped Status", ["All"] + sorted(sales['shipped'].dropna().unique().tolist()))
 payment_filter = st.sidebar.selectbox("Payment Status", ["All"] + sorted(sales['payment_received'].dropna().unique().tolist()))
 start_date = st.sidebar.date_input("Start Date", sales['sales_date'].min())
