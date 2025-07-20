@@ -2,7 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from db import get_connection
-from auth import ensure_authenticated
+from auth import check_login
+
+# -------------------------
+# Authentication Check
+# -------------------------
+check_login()
+user_id = st.session_state.user_id
 
 st.set_page_config(page_title="📈 Sales", layout="wide")
 
@@ -44,7 +50,7 @@ conn = get_connection()
 
 try:
     sales = pd.read_sql("SELECT * FROM Sales", conn)
-    products = pd.read_sql("SELECT product_id, Name AS product_name, category FROM Products", conn)
+    products = pd.read_sql("SELECT product_id, Name, category FROM Products", conn)
     purchases = pd.read_sql("SELECT product_id, cost_price FROM Purchases", conn)
 except Exception as e:
     st.error(f"❌ Error loading data: {e}")
