@@ -2,9 +2,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from db import get_connection
-from auth import check_auth
+from auth import check_login
 
-check_auth()
+# -------------------------
+# Authentication Check
+# -------------------------
+check_login()
+user_id = st.session_state.user_id
+
 
 st.set_page_config(page_title="Purchases", layout="wide")
 
