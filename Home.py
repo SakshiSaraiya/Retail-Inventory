@@ -138,20 +138,19 @@ if not st.session_state["is_logged_in"]:
 if st.session_state["is_logged_in"]:
     st.markdown("<div class='section-title'>Quick Navigation</div>", unsafe_allow_html=True)
 
-    # Navigation items (excluding Dashboard)
     nav_items = [
-        ("📁 Upload Data", "pages/0_Upload_Data.py"),
-        ("💰 Finance Dashboard", "pages/0_Finance_Dashboard.py"),
-        ("📦 Inventory", "pages/3_Inventory.py"),
-        ("📈 Sales", "pages/4_Sales.py"),
-        ("🛒 Purchases", "pages/2_Purchase.py"),
-        ("💸 Expenses", "pages/5_Expenses.py"),
+        ("📁 Upload Data", "0_Upload_Data"),
+        ("💰 Finance Dashboard", "0_Finance_Dashboard"),
+        ("📦 Inventory", "3_Inventory"),
+        ("📈 Sales", "4_Sales"),
+        ("🛒 Purchases", "2_Purchase"),
+        ("💸 Expenses", "5_Expenses"),
     ]
 
     cols = st.columns(3)
-    for i, (label, link) in enumerate(nav_items):
+    for i, (label, page_name) in enumerate(nav_items):
         with cols[i % 3]:
-            st.page_link(link, label=label)
+            st.page_link(pages=page_name, label=label, icon="➡️")
 
     st.markdown("#### ")
     if st.button("Logout"):
