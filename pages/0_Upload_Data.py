@@ -1,103 +1,182 @@
 import streamlit as st
-from db import fetch_data, execute_query
-from auth import check_login 
+import pandas as pd
+from db import execute_query
+from auth import check_login
 
-st.set_page_config(page_title="📤 Upload Data", layout="wide")
+# --------------------------
+# Check if user is logged in
+# --------------------------
+check_login()
+user_id = st.session_state.user_id
 
-check_login()  # ✅ Enforce login
+st.set_page_config(page_title="Upload Data", layout="wide")
+st.markdown("<h2 style='color:#0F172A'>\ud83d\udcc4 Upload Data</h2>", unsafe_allow_html=True)
 
-st.title("📤 Upload Data")
+# --------------------------
+# Function to insert uploaded data into SQL
+# --------------------------
+def handle_csv_upload(label, table_name, required_columns):
+    uploaded_file = st.file_uploader(f"Choose a {label} file", type=["csv"], key=label)
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
 
-# ---------- CSS Styling ----------
-st.markdown("""
-    <style>
-    .card {
-        background-color: #FFFFFF;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        margin-bottom: 2rem;
-    }
-    h3 {
-        color: #0F172A;
-        margin-bottom: 1rem;
-    }
-    </style>
-""", unsafe_allow_html=True)
+            # Validate required columns
+            missing_cols = [col for col in required_columns if col not in df.columns]
+            if missing_cols:
+                st.error(f"Missing columns: {', '.join(missing_cols)}")
+                return
 
+            df['user_id'] = user_id  # Add user ID
 
-# ---------- Upload Product ----------
-with st.container():
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader("Add New Product")
+            # Insert rows into database
+            for _, row in df.iterrows():
+                cols = ", ".join(row.index)
+                vals = tuple(row.values)
+                placeholders = ", ".join(["%s"] * len(row))
+                query = f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})"
+                execute_query(query, vals)
+
+            st.success(f"{label} uploaded successfully!")
+
+        except Exception as e:
+            st.error(f"Error uploading {label} data: {str(e)}")
+
+# --------------------------
+# Function to download sample CSVs
+# --------------------------
+def get_csv_download_button(label, df, filename):
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label=f"\ud83d\udcc4 Download Sample {label} CSV",
+        data=csv,
+        file_name=filename,
+        mime='text/csv',
+        use_container_width=True
+    )
+
+# --------------------------
+# PRODUCT SECTION
+# --------------------------
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("\ud83d\udce6 Upload or Enter Product Data")
+
+product_sample = pd.DataFrame({
+    "NAME": ["T-shirt"],
+    "category": ["Clothing"],
+    "cost_price": [200.0],
+    "selling_price": [300.0],
+    "stock": [50]
+})
+get_csv_download_button("Product", product_sample, "sample_products.csv")
+handle_csv_upload("Product", "products", ["NAME", "category", "cost_price", "selling_price", "stock"])
+
+with st.expander("➕ Add Product Manually"):
     with st.form("product_form"):
-        product_name = st.text_input("Product Name")
+        name = st.text_input("Product Name")
         category = st.text_input("Category")
-        unit_price = st.number_input("Unit Price", min_value=0.0, step=0.01)
-        stock_quantity = st.number_input("Initial Stock Quantity", min_value=0)
-
-        submit_product = st.form_submit_button("Add Product")
-        if submit_product:
+        cost_price = st.number_input("Cost Price", min_value=0.0)
+        selling_price = st.number_input("Selling Price", min_value=0.0)
+        stock = st.number_input("Stock", min_value=0)
+        submit = st.form_submit_button("Add Product")
+        if submit:
             query = """
-                INSERT INTO products (product_name, category, unit_price, stock_quantity)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO products (user_id, NAME, category, cost_price, selling_price, stock)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """
-            success = execute_query(query, (product_name, category, unit_price, stock_quantity))
-            if success:
-                st.success("✅ Product added successfully!")
-    st.markdown("</div>", unsafe_allow_html=True)
+            execute_query(query, (user_id, name, category, cost_price, selling_price, stock))
+            st.success("Product added successfully!")
+st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- Upload Purchase ----------
-with st.container():
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader("Add New Purchase")
+# --------------------------
+# PURCHASE SECTION
+# --------------------------
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("\ud83d\udcc3 Upload or Enter Purchase Data")
+
+purchase_sample = pd.DataFrame({
+    "product_id": [1],
+    "vendor_name": ["Vendor A"],
+    "quantity_purchased": [100],
+    "cost_price": [150.0],
+    "order_date": ["2025-07-20"],
+    "payment_due": ["2025-08-01"],
+    "payment_status": ["Pending"]
+})
+get_csv_download_button("Purchase", purchase_sample, "sample_purchases.csv")
+handle_csv_upload("Purchase", "purchases",
+                  ["product_id", "vendor_name", "quantity_purchased", "cost_price", "order_date", "payment_due", "payment_status"])
+
+with st.expander("➕ Add Purchase Manually"):
     with st.form("purchase_form"):
-        # Get product options from DB
-        products = fetch_data("SELECT product_id, product_name FROM products")
-        product_options = {f"{p['product_name']} (ID: {p['product_id']})": p['product_id'] for p in products}
-
-        selected_product = st.selectbox("Select Product", list(product_options.keys()))
-        product_id = product_options[selected_product]
-
-        quantity = st.number_input("Quantity Purchased", min_value=1)
-        purchase_price = st.number_input("Purchase Price per Unit", min_value=0.0, step=0.01)
-        purchase_date = st.date_input("Purchase Date")
+        product_id = st.number_input("Product ID", min_value=1)
         vendor_name = st.text_input("Vendor Name")
-
-        submit_purchase = st.form_submit_button("Add Purchase")
-        if submit_purchase:
+        quantity_purchased = st.number_input("Quantity Purchased", min_value=1)
+        cost_price = st.number_input("Cost Price", min_value=0.0)
+        order_date = st.date_input("Order Date")
+        payment_due = st.date_input("Payment Due Date")
+        payment_status = st.selectbox("Payment Status", ["Pending", "Completed"])
+        submit = st.form_submit_button("Add Purchase")
+        if submit:
             query = """
-                INSERT INTO purchases (product_id, quantity_purchased, purchase_price, purchase_date, vendor_name)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO purchases (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
-            success = execute_query(query, (product_id, quantity, purchase_price, purchase_date, vendor_name))
-            if success:
-                st.success("✅ Purchase record added successfully!")
-    st.markdown("</div>", unsafe_allow_html=True)
+            execute_query(query, (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status))
+            st.success("Purchase added successfully!")
+st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- Upload Sale ----------
-with st.container():
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader("Add New Sale")
+# --------------------------
+# SALES SECTION
+# --------------------------
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("\ud83d\udcb8 Upload or Enter Sales Data")
+
+sales_sample = pd.DataFrame({
+    "product_id": [1],
+    "quantity_sold": [10],
+    "selling_price": [300.0],
+    "sale_date": ["2025-07-20"],
+    "shipped": ["Yes"],
+    "payment_received": ["Yes"]
+})
+get_csv_download_button("Sales", sales_sample, "sample_sales.csv")
+handle_csv_upload("Sales", "sales",
+                  ["product_id", "quantity_sold", "selling_price", "sale_date", "shipped", "payment_received"])
+
+with st.expander("➕ Add Sale Manually"):
     with st.form("sales_form"):
-        # Get product options again
-        products = fetch_data("SELECT product_id, product_name FROM products")
-        product_options = {f"{p['product_name']} (ID: {p['product_id']})": p['product_id'] for p in products}
-
-        selected_product = st.selectbox("Select Product for Sale", list(product_options.keys()))
-        product_id = product_options[selected_product]
-
-        quantity = st.number_input("Quantity Sold", min_value=1)
-        sale_price = st.number_input("Sale Price per Unit", min_value=0.0, step=0.01)
-        sales_date = st.date_input("Sales Date")
-
-        submit_sale = st.form_submit_button("Add Sale")
-        if submit_sale:
+        product_id = st.number_input("Product ID", min_value=1, key="sale_pid")
+        quantity_sold = st.number_input("Quantity Sold", min_value=1)
+        selling_price = st.number_input("Selling Price", min_value=0.0)
+        sale_date = st.date_input("Sale Date")
+        shipped = st.selectbox("Shipped", ["Yes", "No"])
+        payment_received = st.selectbox("Payment Received", ["Yes", "No"])
+        submit = st.form_submit_button("Add Sale")
+        if submit:
             query = """
-                INSERT INTO sales (product_id, quantity_sold, sale_price, sales_date)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-            success = execute_query(query, (product_id, quantity, sale_price, sales_date))
-            if success:
-                st.success("✅ Sale record added successfully!")
-    st.markdown("</div>", unsafe_allow_html=True)
+            execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received))
+            st.success("Sale added successfully!")
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --------------------------
+# Custom Styling
+# --------------------------
+st.markdown("""
+<style>
+    .stDownloadButton>button {
+        background-color: #0F172A;
+        color: white;
+    }
+    .card {
+        background-color: white;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+</style>
+""", unsafe_allow_html=True)
