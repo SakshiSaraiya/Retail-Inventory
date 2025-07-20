@@ -8,10 +8,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"  # Hide sidebar until login
 )
 
-# --- Handle Rerun After Login ---
-if st.query_params.get("rerun") == "true":
-    st.experimental_set_query_params()  # Clear the rerun flag
-    st.experimental_rerun()
+# --- Handle Rerun After Login (using new API) ---
+query_params = st.query_params
+
+if query_params.get("rerun") == "true":
+    st.query_params.clear()  # Clears rerun param
+    st.rerun()
+
 
 # --- Session State ---
 if "user_id" not in st.session_state:
@@ -105,7 +108,9 @@ if not st.session_state.user_id:
             if success:
                 st.session_state.user_id = user_id
                 st.success("Login successful! Please wait...")
-                st.experimental_set_query_params(rerun="true")
+                st.query_params["rerun"] = "true"
+                st.rerun()
+
                 st.stop()
             else:
                 st.error("Invalid credentials.")
