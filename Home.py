@@ -7,6 +7,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"  # collapsed until user logs in
 )
+if st.query_params.get("rerun") == "true":
+    st.experimental_set_query_params()  # Clear the rerun flag
+    st.experimental_rerun()
 
 # --- Session State ---
 if "user_id" not in st.session_state:
@@ -95,10 +98,12 @@ if not st.session_state.user_id:
         login_password = st.text_input("Password", type="password", key="login_password")
         if st.button("Login", key="login_button"):
             success, user_id = login_user(username_or_email, login_password)
-            if success:
-                st.session_state.user_id = user_id
-                st.success("Login successful!")
-                st.experimental_rerun()
+           if success:
+    st.session_state.user_id = user_id
+    st.success("Login successful! Please wait...")
+    st.experimental_set_query_params(rerun="true")
+    st.stop()  # Prevents execution of rest of the script until rerun
+
             else:
                 st.error("Invalid credentials.")
 
