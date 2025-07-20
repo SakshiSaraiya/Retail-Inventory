@@ -92,20 +92,22 @@ st.markdown("<div class='subheading'>Your centralized platform for inventory, fi
 if not st.session_state.user_id:
     login_tab, register_tab = st.tabs(["Login", "Register"])
 
-    with login_tab:
-        st.subheader("Login")
-        username_or_email = st.text_input("Username or Email", key="login_username")
-        login_password = st.text_input("Password", type="password", key="login_password")
-        if st.button("Login", key="login_button"):
-            success, user_id = login_user(username_or_email, login_password)
-           if success:
-    st.session_state.user_id = user_id
-    st.success("Login successful! Please wait...")
-    st.experimental_set_query_params(rerun="true")
-    st.stop()  # Prevents execution of rest of the script until rerun
+   with login_tab:
+    st.subheader("Login")
+    username_or_email = st.text_input("Username or Email", key="login_username")
+    login_password = st.text_input("Password", type="password", key="login_password")
+    
+    if st.button("Login", key="login_button"):
+        success, user_id = login_user(username_or_email, login_password)
+        
+        if success:
+            st.session_state.user_id = user_id
+            st.success("Login successful! Please wait...")
+            st.experimental_set_query_params(rerun="true")
+            st.stop()  # Prevents execution of rest of the script until rerun
+        else:
+            st.error("Invalid credentials.")
 
-            else:
-                st.error("Invalid credentials.")
 
     with register_tab:
         st.subheader("Register")
