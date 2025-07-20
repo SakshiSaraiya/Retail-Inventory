@@ -6,10 +6,6 @@ st.set_page_config(page_title="📤 Upload Data", layout="wide")
 
 check_login()  # ✅ Enforce login
 
-if "user_id" not in st.session_state or not st.session_state.user_id:
-    st.warning("Please log in to access the upload functionality.")
-    st.stop()
-
 st.title("📤 Upload Data")
 
 # ---------- CSS Styling ----------
