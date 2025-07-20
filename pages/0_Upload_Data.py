@@ -165,6 +165,9 @@ with st.expander("➕ Add Sale Manually"):
 # --------------------------
 st.markdown("""
 <style>
+   [data-testid="stSidebar"] {
+        background-color: #0F172A !important;
+    }
     .stDownloadButton>button {
         background-color: #0F172A;
         color: white;
