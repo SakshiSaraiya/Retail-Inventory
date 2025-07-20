@@ -149,7 +149,7 @@ if st.session_state.user_id:
                 <p>Quickly upload product, purchase, or sales records.</p>
             </div>
         """, unsafe_allow_html=True)
-        st.page_link("pages/0_upload_data.py", label="Go to Upload Page")
+        st.page_link("pages/0_Upload_Data.py", label="Go to Upload Page")
     with col5:
         st.markdown("""
             <div class='feature-card'>
@@ -157,7 +157,7 @@ if st.session_state.user_id:
                 <p>Analyze revenue, expenses, and overall business health.</p>
             </div>
         """, unsafe_allow_html=True)
-        st.page_link("pages/5_Finance_Dashboard.py", label="Go to Financial Dashboard")
+        st.page_link("pages/0_Finance_Dashboard.py", label="Go to Financial Dashboard")
 
     st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
     st.markdown("""
