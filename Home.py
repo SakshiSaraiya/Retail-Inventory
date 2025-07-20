@@ -150,7 +150,7 @@ if st.session_state["is_logged_in"]:
     cols = st.columns(3)
     for i, (label, page_name) in enumerate(nav_items):
         with cols[i % 3]:
-            st.page_link(pages=page_name, label=label, icon="➡️")
+            st.page_link(page=page_name, label=label, icon="➡️")
 
     st.markdown("#### ")
     if st.button("Logout"):
