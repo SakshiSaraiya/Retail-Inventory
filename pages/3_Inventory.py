@@ -70,7 +70,7 @@ conn = get_connection()
 try:
     purchases = pd.read_sql("SELECT product_id, quantity_purchased, cost_price FROM Purchases", conn)
     sales = pd.read_sql("SELECT product_id, quantity_sold, selling_price FROM Sales", conn)
-    products=pd.read_sql("SELECT product_name, category FROM Products",conn)
+    products=pd.read_sql("SELECT Name, category FROM Products",conn)
 except Exception as e:
     st.error(f"❌ Error loading data: {e}")
     st.stop()
