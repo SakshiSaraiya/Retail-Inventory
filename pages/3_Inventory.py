@@ -1,7 +1,10 @@
 import streamlit as st 
 import pandas as pd
 import plotly.express as px
-from db_connector import get_connection
+from db import get_connection
+from auth import check_authentication
+
+check_authentication()
 
 st.set_page_config(page_title="Inventory", layout="wide")
 
