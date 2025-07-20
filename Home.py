@@ -81,21 +81,21 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
         <div class='feature-card'>
-            <h4>📦 Inventory Management</h4>
+            <h4> Inventory Management</h4>
             <p>Track stock levels, categories, reorder alerts.</p>
         </div>
     """, unsafe_allow_html=True)
 with col2:
     st.markdown("""
         <div class='feature-card'>
-            <h4>📊 Sales & Profit Analysis</h4>
+            <h4> Sales & Profit Analysis</h4>
             <p>Visual dashboards for revenue and trends.</p>
         </div>
     """, unsafe_allow_html=True)
 with col3:
     st.markdown("""
         <div class='feature-card'>
-            <h4>🧠 Smart Forecasting</h4>
+            <h4> Smart Forecasting</h4>
             <p>Predict demand and optimize inventory costs.</p>
         </div>
     """, unsafe_allow_html=True)
@@ -107,7 +107,7 @@ if not st.session_state["is_logged_in"]:
     with login_tab:
         st.subheader("Login")
         username_or_email = st.text_input("Username or Email")
-        password = st.text_input("Password", type="password")
+        password = st.text_input("Password", type="password", key="login_password")
         login_submit = st.button("Login")
 
         if login_submit:
@@ -124,7 +124,7 @@ if not st.session_state["is_logged_in"]:
         st.subheader("Register")
         new_username = st.text_input("New Username")
         new_email = st.text_input("Email")
-        new_password = st.text_input("Password", type="password")
+        new_password = st.text_input("Password", type="password", key="register_password")
         register_submit = st.button("Register")
 
         if register_submit:
