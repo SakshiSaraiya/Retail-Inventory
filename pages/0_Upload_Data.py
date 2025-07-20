@@ -10,7 +10,8 @@ check_login()
 user_id = st.session_state.user_id
 
 st.set_page_config(page_title="Upload Data", layout="wide")
-st.markdown("<h2 style='color:#0F172A'>\ud83d\udcc4 Upload Data</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:#0F172A'>Upload Data</h2>", unsafe_allow_html=True)
+
 
 # --------------------------
 # Function to insert uploaded data into SQL
