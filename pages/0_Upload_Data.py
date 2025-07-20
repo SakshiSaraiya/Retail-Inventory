@@ -168,6 +168,9 @@ st.markdown("""
    [data-testid="stSidebar"] {
         background-color: #0F172A !important;
     }
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
     .stDownloadButton>button {
         background-color: #0F172A;
         color: white;
