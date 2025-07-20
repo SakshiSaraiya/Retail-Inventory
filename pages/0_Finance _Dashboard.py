@@ -72,61 +72,39 @@ except Exception as e:
     st.error("❌ Failed to compute financial metrics.")
     st.exception(e)
 
-# -------------------------
-# Profit by Category Chart
-# -------------------------
-st.subheader("📦 Category-wise Profitability")
+# Category Profitability
+purchases_merged = pd.merge(
+    purchases,
+    products[['product_id', 'category']],
+    on='product_id',
+    how='left'
+)
 
-try:
-    # Merge sales with purchases to get category and cost info
-    sales_with_cost = pd.merge(
-        sales,
-        purchases[['product_id', 'cost_price', 'category']],
-        on='product_id',
-        how='left'
-    )
+category_sales = sales.merge(products[['product_id', 'category']], on='product_id', how='left')
+category_profit = category_sales.copy()
+category_profit['profit'] = category_profit['selling_price'] * category_profit['quantity_sold']
 
-    sales_with_cost["revenue"] = sales_with_cost["quantity_sold"] * sales_with_cost["selling_price"]
-    sales_with_cost["cogs"] = sales_with_cost["quantity_sold"] * sales_with_cost["cost_price"]
+category_summary = category_profit.groupby('category')['profit'].sum().reset_index()
+category_summary = category_summary.sort_values(by='profit', ascending=False)
 
-    # Aggregate revenue and cost by category
-    revenue_by_category = sales_with_cost.groupby("category")["revenue"].sum().reset_index()
-    cogs_by_category = sales_with_cost.groupby("category")["cogs"].sum().reset_index()
+fig_cat = px.bar(
+    category_summary,
+    x='category',
+    y='profit',
+    title='Category-wise Profitability',
+    color='category',
+    color_discrete_sequence=px.colors.qualitative.Safe
+)
+fig_cat.update_layout(
+    plot_bgcolor='white',
+    paper_bgcolor='white',
+    title_font=dict(size=18, color='#0F172A'),
+    xaxis=dict(title='Category', linecolor='black', title_font=dict(color='#0F172A'), tickfont=dict(color='#0F172A')),
+    yaxis=dict(title='Profit', linecolor='black', title_font=dict(color='#0F172A'), tickfont=dict(color='#0F172A'))
+)
 
-    # Merge Revenue and COGS
-    profit_df = pd.merge(revenue_by_category, cogs_by_category, on="category", how="outer").fillna(0)
-    profit_df.columns = ["Category", "Revenue", "COGS"]
-    profit_df["Profit"] = profit_df["Revenue"] - profit_df["COGS"]
-    profit_df["Margin (%)"] = np.where(
-        profit_df["Revenue"] > 0,
-        round((profit_df["Profit"] / profit_df["Revenue"]) * 100, 2),
-        0
-    )
+st.plotly_chart(fig_cat, use_container_width=True)
 
-    # Display Dataframe
-    st.dataframe(
-        profit_df.style.format({
-            "Revenue": "₹{:,.2f}",
-            "COGS": "₹{:,.2f}",
-            "Profit": "₹{:,.2f}",
-            "Margin (%)": "{:.2f}%"
-        })
-    )
-
-    # Plot
-    fig = px.bar(
-        profit_df,
-        x="Category",
-        y="Profit",
-        color="Margin (%)",
-        color_continuous_scale="Bluered",
-        title="Profit by Category (Based on Sold Quantities)"
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-except Exception as e:
-    st.error("❌ Error in category profitability section.")
-    st.exception(e)
 
 # -------------------------
 # Inventory Holding Cost & DIO
