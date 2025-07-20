@@ -59,7 +59,6 @@ def get_csv_download_button(label, df, filename):
 # --------------------------
 # PRODUCT SECTION
 # --------------------------
-st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.subheader("Upload or Enter Product Data")
 
 product_sample = pd.DataFrame({
@@ -82,7 +81,7 @@ with st.expander("➕ Add Product Manually"):
         submit = st.form_submit_button("Add Product")
         if submit:
             query = """
-                INSERT INTO products (user_id, NAME, category, cost_price, selling_price, stock)
+                INSERT INTO Products (user_id, NAME, category, cost_price, selling_price, stock)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             execute_query(query, (user_id, name, category, cost_price, selling_price, stock))
@@ -92,7 +91,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --------------------------
 # PURCHASE SECTION
 # --------------------------
-st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.subheader(" Upload or Enter Purchase Data")
 
 purchase_sample = pd.DataFrame({
@@ -120,7 +118,7 @@ with st.expander("➕ Add Purchase Manually"):
         submit = st.form_submit_button("Add Purchase")
         if submit:
             query = """
-                INSERT INTO purchases (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status)
+                INSERT INTO Purchases (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
             execute_query(query, (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status))
@@ -130,7 +128,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --------------------------
 # SALES SECTION
 # --------------------------
-st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.subheader(" Upload or Enter Sales Data")
 
 sales_sample = pd.DataFrame({
@@ -156,12 +153,12 @@ with st.expander("➕ Add Sale Manually"):
         submit = st.form_submit_button("Add Sale")
         if submit:
             query = """
-                INSERT INTO sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
+                INSERT INTO Sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received))
             st.success("Sale added successfully!")
-st.markdown("</div>", unsafe_allow_html=True)
+
 
 # --------------------------
 # Custom Styling
