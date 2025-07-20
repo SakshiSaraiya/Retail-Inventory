@@ -50,8 +50,8 @@ st.markdown("""
         margin: 2rem 0 1rem;
     }
     .nav-card {
-        background-color: #0F172A;
-        color: white;
+        background-color: #FFFFFF;
+        color: #0F172A;
         border-radius: 12px;
         padding: 1.5rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
