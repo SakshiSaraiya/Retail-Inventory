@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st  
 from auth import register_user, login_user
 
 # --- Page Config ---
@@ -56,6 +56,10 @@ st.markdown("""
         padding: 1.5rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         margin-bottom: 1rem;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     .nav-card h4 {
         margin: 0 0 0.5rem 0;
@@ -67,8 +71,8 @@ st.markdown("""
         color: #E2E8F0;
     }
     .nav-card a button {
-        background-color: white;
-        color: #0F172A;
+        background-color: #0F172A;
+        color: white;
         border: none;
         padding: 0.5rem 1.2rem;
         border-radius: 8px;
@@ -77,7 +81,7 @@ st.markdown("""
         transition: 0.3s;
     }
     .nav-card a button:hover {
-        background-color: #e2e8f0;
+        background-color: #1E293B;
     }
     [data-testid="stSidebar"] {
         background-color: #0F172A;
