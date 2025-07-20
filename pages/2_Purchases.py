@@ -72,6 +72,8 @@ st.markdown("""
 # -------------------------
 # Title
 # -------------------------
+st.title("📊 Retail Business Dashboard")
+st.markdown("Get a comprehensive overview of your sales, profit, inventory, and performance trends.")
 st.markdown("""
     <h2 style='margin-bottom: 1rem;'>Purchase Overview</h2>
 """, unsafe_allow_html=True)
