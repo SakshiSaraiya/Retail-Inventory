@@ -68,7 +68,7 @@ conn = get_connection()
 try:
     purchases = pd.read_sql("SELECT product_id, quantity_purchased, cost_price FROM Purchases", conn)
     sales = pd.read_sql("SELECT product_id, quantity_sold, selling_price FROM Sales", conn)
-    products = pd.read_sql("SELECT Name, category, product_id FROM Products", conn)
+    products = pd.read_sql("SELECT Name, category, product_id, stock, cost_price, selling_price FROM Products", conn)
 except Exception as e:
     st.error(f"❌ Error loading data: {e}")
     st.stop()
@@ -76,45 +76,30 @@ except Exception as e:
 # -------------------------
 # Preprocessing
 # -------------------------
-# Clean product_id formatting
 purchases['product_id'] = purchases['product_id'].astype(str).str.strip().str.upper()
 sales['product_id'] = sales['product_id'].astype(str).str.strip().str.upper()
 products['product_id'] = products['product_id'].astype(str).str.strip().str.upper()
 
-# Aggregate purchases
-purchase_agg = purchases.groupby('product_id').agg({
-    'quantity_purchased': 'sum',
-    'cost_price': 'mean'
-}).reset_index()
+# Aggregate data
+purchase_agg = purchases.groupby('product_id').agg({'quantity_purchased': 'sum'}).reset_index()
+sales_agg = sales.groupby('product_id').agg({'quantity_sold': 'sum'}).reset_index()
 
-# Aggregate sales
-sales_agg = sales.groupby('product_id').agg({
-    'quantity_sold': 'sum',
-    'selling_price': 'mean'
-}).reset_index()
+# Merge all data
+inventory_df = products.merge(purchase_agg, on='product_id', how='left')
+inventory_df = inventory_df.merge(sales_agg, on='product_id', how='left')
 
-# Merge data
-inventory_df = pd.merge(purchase_agg, sales_agg, on='product_id', how='left')
-inventory_df = pd.merge(inventory_df, products, on='product_id', how='left')
-
-# Fill missing values
+# Fill NaNs
+inventory_df['quantity_purchased'] = inventory_df['quantity_purchased'].fillna(0)
 inventory_df['quantity_sold'] = inventory_df['quantity_sold'].fillna(0)
-inventory_df['selling_price'] = inventory_df['selling_price'].fillna(0)
 
-# Calculations
-inventory_df['live_stock'] = inventory_df['quantity_purchased'] - inventory_df['quantity_sold']
+# Live stock = product stock + quantity_purchased - quantity_sold
+inventory_df['live_stock'] = inventory_df['stock'] + inventory_df['quantity_purchased'] - inventory_df['quantity_sold']
 inventory_df['stock_value'] = inventory_df['live_stock'] * inventory_df['cost_price']
 inventory_df['potential_revenue'] = inventory_df['live_stock'] * inventory_df['selling_price']
 inventory_df['profit_margin'] = inventory_df['selling_price'] - inventory_df['cost_price']
 inventory_df['total_profit'] = inventory_df['profit_margin'] * inventory_df['live_stock']
 
-# Rename columns for display
-inventory_df.rename(columns={
-    'Name': 'name',
-    'category': 'Category',
-    'cost_price': 'Cost Price',
-    'selling_price': 'Selling Price'
-}, inplace=True)
+inventory_df.rename(columns={'Name': 'name', 'category': 'Category'}, inplace=True)
 
 # -------------------------
 # Sidebar Filters
@@ -170,7 +155,7 @@ with k4:
 # Product Table
 # -------------------------
 st.markdown("### 📋 Product List (Live Stock)")
-st.dataframe(filtered[['product_id', 'name', 'Category', 'Cost Price', 'Selling Price', 'live_stock', 'stock_value']], use_container_width=True)
+st.dataframe(filtered[['product_id', 'name', 'Category', 'cost_price', 'selling_price', 'live_stock', 'stock_value']], use_container_width=True)
 
 # -------------------------
 # Low Stock Alerts
