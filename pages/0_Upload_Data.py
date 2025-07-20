@@ -1,201 +1,104 @@
 import streamlit as st
-import pandas as pd
-from db_connector import get_connection
+from db import fetch_data, execute_query
 
-# --- Page Config ---
-st.set_page_config(
-    page_title="Upload Data | Retail Management",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="📤 Upload Data", layout="wide")
 
-# --- CSS Styling ---
+if "user_id" not in st.session_state or not st.session_state.user_id:
+    st.warning("Please log in to access the upload functionality.")
+    st.stop()
+
+st.title("📤 Upload Data")
+
+# ---------- CSS Styling ----------
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        background-color: #0F172A;
+    .card {
+        background-color: #FFFFFF;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        margin-bottom: 2rem;
     }
-
-    .block-container {
-        background-color: #F8FAFC;
-        padding-top: 2rem;
-        color: #1E293B;
+    h3 {
+        color: #0F172A;
+        margin-bottom: 1rem;
     }
-
-    h1 {
-        color: #0F172A !important;
-        font-weight: 800;
-    }
-
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1E293B;
-        margin: 2rem 0 1rem;
-    }
-
-    .stExpander {
-        background-color: #ffffff;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        padding: 1rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        margin-bottom: 1.5rem;
-    }
-
-    .stButton>button {
-        background-color: #0F172A;
-        color: white;
-        font-weight: 600;
-        border-radius: 6px;
-        padding: 0.5rem 1.2rem;
-    }
-
-    .stButton>button:hover {
-        background-color: #1E293B;
-    }
-
-    header {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1>Upload or Add Inventory Data</h1>", unsafe_allow_html=True)
 
-conn = get_connection()
-if conn is None:
-    st.stop()
+# ---------- Upload Product ----------
+with st.container():
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("Add New Product")
+    with st.form("product_form"):
+        product_name = st.text_input("Product Name")
+        category = st.text_input("Category")
+        unit_price = st.number_input("Unit Price", min_value=0.0, step=0.01)
+        stock_quantity = st.number_input("Initial Stock Quantity", min_value=0)
 
-cursor = conn.cursor()
-
-# --- Upload CSV Files Section ---
-st.markdown("<div class='section-title'>Upload CSV Files</div>", unsafe_allow_html=True)
-
-product_file = st.file_uploader("Upload Product CSV", type=["csv"])
-if product_file:
-    df = pd.read_csv(product_file)
-    for _, row in df.iterrows():
-        try:
-            cursor.execute("""
-                INSERT INTO product (product_id, product_name, category, stock)
+        submit_product = st.form_submit_button("Add Product")
+        if submit_product:
+            query = """
+                INSERT INTO products (product_name, category, unit_price, stock_quantity)
                 VALUES (%s, %s, %s, %s)
-            """, (row['product_id'], row['product_name'], row['category'], row['stock']))
-        except Exception as e:
-            st.warning(f"Skipped a row due to error: {e}")
-    conn.commit()
-    st.success("Product data uploaded successfully!")
+            """
+            success = execute_query(query, (product_name, category, unit_price, stock_quantity))
+            if success:
+                st.success("✅ Product added successfully!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-purchase_file = st.file_uploader("Upload Purchase CSV", type=["csv"])
-if purchase_file:
-    df = pd.read_csv(purchase_file)
-    for _, row in df.iterrows():
-        try:
-            cursor.execute("""
-                INSERT INTO purchases (product_id, product_name, category, vendor_name, order_date,
-                    quantity_purchased, cost_price, payment_due_date, payment_status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (row['product_id'], row['product_name'], row['category'], row['vendor_name'],
-                  row['order_date'], row['quantity_purchased'], row['cost_price'],
-                  row['payment_due_date'], row['payment_status']))
-        except Exception as e:
-            st.warning(f"Skipped a row due to error: {e}")
-    conn.commit()
-    st.success("Purchase data uploaded successfully!")
+# ---------- Upload Purchase ----------
+with st.container():
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("Add New Purchase")
+    with st.form("purchase_form"):
+        # Get product options from DB
+        products = fetch_data("SELECT product_id, product_name FROM products")
+        product_options = {f"{p['product_name']} (ID: {p['product_id']})": p['product_id'] for p in products}
 
-sales_file = st.file_uploader("Upload Sales CSV", type=["csv"])
-if sales_file:
-    df = pd.read_csv(sales_file)
-    for _, row in df.iterrows():
-        try:
-            cursor.execute("""
-                INSERT INTO sales (sale_id, product_id, selling_price, quantity_sold, sales_date,
-                    shipped_status, payment_status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (row['sale_id'], row['product_id'], row['selling_price'], row['quantity_sold'],
-                  row['sales_date'], row['shipped_status'], row['payment_status']))
-        except Exception as e:
-            st.warning(f"Skipped a row due to error: {e}")
-    conn.commit()
-    st.success("Sales data uploaded successfully!")
+        selected_product = st.selectbox("Select Product", list(product_options.keys()))
+        product_id = product_options[selected_product]
 
-# --- Add Manually ---
-st.markdown("<div class='section-title'>Add Data Manually</div>", unsafe_allow_html=True)
-
-# --- Add Purchase ---
-with st.expander("➕ Add New Purchase", expanded=False):
-    with st.form("add_purchase_form"):
-        product_id = st.text_input("Product ID")
-        product_name = st.text_input("Product Name")
-        category = st.text_input("Category")
+        quantity = st.number_input("Quantity Purchased", min_value=1)
+        purchase_price = st.number_input("Purchase Price per Unit", min_value=0.0, step=0.01)
+        purchase_date = st.date_input("Purchase Date")
         vendor_name = st.text_input("Vendor Name")
-        order_date = st.date_input("Order Date")
-        quantity_purchased = st.number_input("Quantity Purchased", min_value=1)
-        cost_price = st.number_input("Cost Price", min_value=0.0)
-        payment_due_date = st.date_input("Payment Due Date")
-        payment_status = st.selectbox("Payment Status", ["Pending", "Paid", "Overdue"])
-        submit = st.form_submit_button("Add Purchase")
-        if submit:
-            try:
-                cursor.execute("""
-                    INSERT INTO purchases (product_id, product_name, category, vendor_name, order_date,
-                        quantity_purchased, cost_price, payment_due_date, payment_status)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (product_id, product_name, category, vendor_name, order_date,
-                      quantity_purchased, cost_price, payment_due_date, payment_status))
-                conn.commit()
-                st.success("Purchase added successfully!")
-            except Exception as e:
-                st.error("Error inserting purchase.")
-                st.code(str(e))
 
-# --- Add Product ---
-with st.expander("➕ Add New Product", expanded=False):
-    with st.form("add_product_form"):
-        product_id = st.text_input("Product ID")
-        product_name = st.text_input("Product Name")
-        category = st.text_input("Category")
-        stock = st.number_input("Stock Quantity", min_value=0)
-        submit = st.form_submit_button("Add Product")
-        if submit:
-            try:
-                cursor.execute("SELECT 1 FROM product WHERE product_id = %s", (product_id,))
-                if cursor.fetchone():
-                    st.error("Product ID already exists.")
-                else:
-                    cursor.execute("""
-                        INSERT INTO product (product_id, product_name, category, stock)
-                        VALUES (%s, %s, %s, %s)
-                    """, (product_id, product_name, category, stock))
-                    conn.commit()
-                    st.success("Product added successfully!")
-            except Exception as e:
-                st.error("Error inserting product.")
-                st.code(str(e))
+        submit_purchase = st.form_submit_button("Add Purchase")
+        if submit_purchase:
+            query = """
+                INSERT INTO purchases (product_id, quantity_purchased, purchase_price, purchase_date, vendor_name)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            success = execute_query(query, (product_id, quantity, purchase_price, purchase_date, vendor_name))
+            if success:
+                st.success("✅ Purchase record added successfully!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# --- Add Sale ---
-with st.expander("➕ Add New Sale", expanded=False):
-    with st.form("add_sale_form"):
-        sale_id = st.number_input("Sale ID", min_value=1)
-        product_id = st.text_input("Product ID")
-        selling_price = st.number_input("Selling Price", min_value=0.0)
-        quantity_sold = st.number_input("Quantity Sold", min_value=1)
+# ---------- Upload Sale ----------
+with st.container():
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("Add New Sale")
+    with st.form("sales_form"):
+        # Get product options again
+        products = fetch_data("SELECT product_id, product_name FROM products")
+        product_options = {f"{p['product_name']} (ID: {p['product_id']})": p['product_id'] for p in products}
+
+        selected_product = st.selectbox("Select Product for Sale", list(product_options.keys()))
+        product_id = product_options[selected_product]
+
+        quantity = st.number_input("Quantity Sold", min_value=1)
+        sale_price = st.number_input("Sale Price per Unit", min_value=0.0, step=0.01)
         sales_date = st.date_input("Sales Date")
-        shipped_status = st.selectbox("Shipped Status", ["Shipped", "Pending", "Cancelled"])
-        payment_status = st.selectbox("Payment Status", ["Received", "Pending"])
-        submit = st.form_submit_button("Add Sale")
-        if submit:
-            try:
-                cursor.execute("SELECT 1 FROM sales WHERE sale_id = %s", (sale_id,))
-                if cursor.fetchone():
-                    st.error("Sale ID already exists.")
-                else:
-                    cursor.execute("""
-                        INSERT INTO sales (sale_id, product_id, selling_price, quantity_sold, sales_date,
-                            shipped_status, payment_status)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """, (sale_id, product_id, selling_price, quantity_sold,
-                          sales_date, shipped_status, payment_status))
-                    conn.commit()
-                    st.success("Sale added successfully!")
-            except Exception as e:
-                st.error("Error inserting sale.")
-                st.code(str(e))
+
+        submit_sale = st.form_submit_button("Add Sale")
+        if submit_sale:
+            query = """
+                INSERT INTO sales (product_id, quantity_sold, sale_price, sales_date)
+                VALUES (%s, %s, %s, %s)
+            """
+            success = execute_query(query, (product_id, quantity, sale_price, sales_date))
+            if success:
+                st.success("✅ Sale record added successfully!")
+    st.markdown("</div>", unsafe_allow_html=True)
