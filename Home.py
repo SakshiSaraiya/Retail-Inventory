@@ -68,7 +68,7 @@ st.markdown("""
     .nav-card p {
         font-size: 0.95rem;
         margin-bottom: 1rem;
-        color: #E2E8F0;
+        color: #0F172A ;
     }
     .nav-card a button {
         background-color: #0F172A;
