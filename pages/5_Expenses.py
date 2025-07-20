@@ -165,10 +165,10 @@ st.markdown("### Expense History & Summary")
 
 try:
     df = pd.read_sql(f"""
-        SELECT date, category, expense_type, amount, description
-        FROM expenses
+        SELECT expense_date, category, TYPE, amount, description
+        FROM Expenses
         WHERE user_id = {user_id}
-        ORDER BY date DESC
+        ORDER BY expense_date DESC
     """, conn)
     df["date"] = pd.to_datetime(df["date"]).dt.date
 
@@ -184,13 +184,13 @@ try:
 
     # Monthly Expense Trend
     df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
-    monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
+    monthly_chart = df.groupby(["month", "TYPE"])["amount"].sum().reset_index()
 
     fig = px.bar(
         monthly_chart,
         x="month",
         y="amount",
-        color="expense_type",
+        color="TYPE",
         barmode="group",
         text_auto='.2s'
     )
