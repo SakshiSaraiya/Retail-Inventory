@@ -5,22 +5,29 @@ from auth import register_user, login_user
 st.set_page_config(
     page_title="Home | Retail Management",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # collapsed until user logs in
 )
 
 # --- Session State ---
 if "user_id" not in st.session_state:
     st.session_state.user_id = None
 
-# --- CSS Styling ---
+# --- Conditional Sidebar Styling ---
+if st.session_state.user_id:
+    st.markdown("""
+        <style>
+        [data-testid="stSidebar"] {
+            background-color: #0F172A;
+        }
+        [data-testid="stSidebar"] * {
+            color: #FFFFFF !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+# --- General CSS Styling ---
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        background-color: #0F172A;
-    }
-    [data-testid="stSidebar"] * {
-        color: #FFFFFF !important;
-    }
     .block-container {
         background-color: #F8FAFC;
         padding-top: 2rem;
@@ -78,34 +85,36 @@ st.markdown("""
 st.markdown("<h1>Welcome to All-in-One Retail Management</h1>", unsafe_allow_html=True)
 st.markdown("<div class='subheading'>Your centralized platform for inventory, finance, and vendor performance insights.</div>", unsafe_allow_html=True)
 
-# --- Authentication Tabs ---
-login_tab, register_tab = st.tabs(["Login", "Register"])
+# --- Authentication ---
+if not st.session_state.user_id:
+    login_tab, register_tab = st.tabs(["Login", "Register"])
 
-with login_tab:
-    st.subheader("Login")
-    username_or_email = st.text_input("Username or Email", key="login_username")
-    login_password = st.text_input("Password", type="password", key="login_password")
-    if st.button("Login", key="login_button"):
-        success, user_id = login_user(username_or_email, login_password)
-        if success:
-            st.session_state.user_id = user_id
-            st.success("Login successful!")
-        else:
-            st.error("Invalid credentials.")
+    with login_tab:
+        st.subheader("Login")
+        username_or_email = st.text_input("Username or Email", key="login_username")
+        login_password = st.text_input("Password", type="password", key="login_password")
+        if st.button("Login", key="login_button"):
+            success, user_id = login_user(username_or_email, login_password)
+            if success:
+                st.session_state.user_id = user_id
+                st.success("Login successful!")
+                st.experimental_rerun()
+            else:
+                st.error("Invalid credentials.")
 
-with register_tab:
-    st.subheader("Register")
-    new_username = st.text_input("New Username", key="register_username")
-    new_email = st.text_input("Email", key="register_email")
-    new_password = st.text_input("Password", type="password", key="register_password")
-    if st.button("Register", key="register_button"):
-        success, message = register_user(new_username, new_email, new_password)
-        if success:
-            st.success(message)
-        else:
-            st.error(message)
+    with register_tab:
+        st.subheader("Register")
+        new_username = st.text_input("New Username", key="register_username")
+        new_email = st.text_input("Email", key="register_email")
+        new_password = st.text_input("Password", type="password", key="register_password")
+        if st.button("Register", key="register_button"):
+            success, message = register_user(new_username, new_email, new_password)
+            if success:
+                st.success(message)
+            else:
+                st.error(message)
 
-# --- Conditional Access ---
+# --- Main Content (Only after login) ---
 if st.session_state.user_id:
     st.markdown("<div class='section-title'>Key Features</div>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
