@@ -152,9 +152,9 @@ if uploaded_file:
 
         for _, row in df_upload.iterrows():
             cursor.execute("""
-                INSERT INTO expenses (user_id, date, category, expense_type, amount, description)
+                INSERT INTO Expenses (user_id, expense_date, category, TYPE, amount, description)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (user_id, row["date"], row["category"], row["expense_type"], row["amount"], row["description"]))
+            """, (user_id, row["expense_date"], row["category"], row["TYPE"], row["amount"], row["description"]))
         conn.commit()
         st.success("Expenses uploaded successfully.")
     except Exception as e:
@@ -170,7 +170,7 @@ try:
         WHERE user_id = {user_id}
         ORDER BY expense_date DESC
     """, conn)
-    df["date"] = pd.to_datetime(df["date"]).dt.date
+    df["expense_date"] = pd.to_datetime(df["expense_date"]).dt.date
 
     st.dataframe(df, use_container_width=True)
 
@@ -183,7 +183,7 @@ try:
         st.markdown('<div class="metric-card"><h3>Variable Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['expense_type']=='Variable']['amount'].sum()), unsafe_allow_html=True)
 
     # Monthly Expense Trend
-    df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
+    df["month"] = pd.to_datetime(df["expense_date"]).dt.to_period("M").astype(str)
     monthly_chart = df.groupby(["month", "TYPE"])["amount"].sum().reset_index()
 
     fig = px.bar(
