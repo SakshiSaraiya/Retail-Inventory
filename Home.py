@@ -204,7 +204,15 @@ st.markdown("## 🕒 Recent Activities & Reminders")
 
 
 # ---------- RECENT ACTIVITIES ----------
+import pandas as pd
+import streamlit as st
+from db import get_connection
+
+st.markdown("## 🕒 Recent Activities & Reminders")
+
+conn = get_connection()
 user_id = st.session_state.get("user_id")
+
 st.markdown("### 📌 Recent Activities")
 with st.container():
     col1, col2, col3 = st.columns(3)
