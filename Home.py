@@ -204,6 +204,8 @@ import streamlit as st
 import pandas as pd
 from db import get_connection
 
+conn = get_connection()
+user_id = st.session_state.get("user_id")
     # --- Recent Activities & To-do Reminders Section ---
 st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
 
