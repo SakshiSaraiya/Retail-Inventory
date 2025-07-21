@@ -204,6 +204,7 @@ st.markdown("## 🕒 Recent Activities & Reminders")
 
 
 # ---------- RECENT ACTIVITIES ----------
+user_id = st.session_state.get("user_id")
 st.markdown("### 📌 Recent Activities")
 with st.container():
     col1, col2, col3 = st.columns(3)
