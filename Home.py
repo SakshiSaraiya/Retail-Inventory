@@ -208,13 +208,13 @@ import pandas as pd
 from db import get_connection
 
     # --- Recent Activities & Reminders Section ---
-  st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
+st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
 
     # --- Reconnect to DB (you already closed it earlier) ---
-    conn = get_connection()
-    user_id = st.session_state.get("user_id")
+conn = get_connection()
+user_id = st.session_state.get("user_id")
 
-    if conn:
+   if conn:
         # Run Queries
         recent_sales = pd.read_sql("""
             SELECT s.sale_date, p.NAME, s.quantity_sold
