@@ -156,34 +156,57 @@ if not st.session_state["is_logged_in"]:
             else:
                 st.error(message)
 
-# --- Post-Login Navigation ---
+# --- Post-Login Summary Dashboard ---
 if st.session_state["is_logged_in"]:
-    st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'>Your Retail Summary</div>", unsafe_allow_html=True)
 
-    pages = [
-        {"name": "Upload Data", "desc": "Update your inventory, sales, or expense data.", "path": "Upload_Data"},
-        {"name": "Finance Dashboard", "desc": "Explore profit, margin, and working capital insights.", "path": "Finance_Dashboard"},
-        {"name": "Purchases", "desc": "View and analyze purchase history.", "path": "Purchases"},
-        {"name": "Inventory", "desc": "Monitor inventory levels and alerts.", "path": "Inventory"},
-        {"name": "Sales", "desc": "Analyze sales trends and forecasting.", "path": "Sales"},
-        {"name": "Expenses", "desc": "Manage and track operating costs.", "path": "Expenses"},
-    ]
+    import pandas as pd
+    import plotly.express as px
+    from db import get_connection
 
-    nav_cols = st.columns(3)
-    for idx, page in enumerate(pages):
-        col = nav_cols[idx % 3]
-        with col:
-            st.markdown(f"""
-                <div class='nav-card'>
-                    <h4>🔹 {page['name']}</h4>
-                    <p>{page['desc']}</p>
-                    <a href='/{page['path']}' target='_self'><button>Go to {page['name']}</button></a>
-                </div>
-            """, unsafe_allow_html=True)
+    # --- Fetch Summary Stats ---
+    conn = get_connection()
+    total_products, total_sales, total_expenses = 0, 0, 0
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM Products WHERE user_id = %s", (st.session_state["user_id"],))
+        total_products = cursor.fetchone()[0]
 
-    # Logout
-    st.markdown("#### ")
+        cursor.execute("SELECT SUM(quantity_sold * selling_price) FROM Sales WHERE user_id = %s", (st.session_state["user_id"],))
+        total_sales = cursor.fetchone()[0] or 0
+
+        cursor.execute("SELECT SUM(amount) FROM Expenses WHERE user_id = %s", (st.session_state["user_id"],))
+        total_expenses = cursor.fetchone()[0] or 0
+
+        cursor.close()
+        conn.close()
+
+    # --- Display Metrics ---
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🛒 Total Products", total_products)
+    col2.metric("💰 Total Sales", f"₹{total_sales:,.2f}")
+    col3.metric("📉 Total Expenses", f"₹{total_expenses:,.2f}")
+
+    # --- Sales Trend Visualization (Dummy Example) ---
+    sample_data = pd.DataFrame({
+        "Month": pd.date_range(start="2024-01-01", periods=6, freq='M').strftime('%b %Y'),
+        "Sales": [15000, 18000, 12000, 25000, 21000, 30000]
+    })
+    st.markdown("<div class='section-title'>📈 Sales Trend</div>", unsafe_allow_html=True)
+    fig = px.line(sample_data, x="Month", y="Sales", markers=True, title="Monthly Sales Trend")
+    fig.update_layout(
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(color="#1E293B"),
+        title_font=dict(size=18),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=False)
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- Logout Button ---
     if st.button("Logout"):
         st.session_state["is_logged_in"] = False
         st.session_state["user_id"] = None
         st.rerun()
+
