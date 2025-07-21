@@ -199,9 +199,6 @@ if st.session_state["is_logged_in"]:
     col3.markdown(f"<div style='{card_style}'>📉<br>Total Expenses<br><span style='font-size:26px'>₹{total_expenses:,.2f}</span></div>", unsafe_allow_html=True)
 
 
-st.markdown("## 🕒 Recent Activities & Reminders")
-
-
 
 import streamlit as st
 import pandas as pd
