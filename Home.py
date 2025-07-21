@@ -208,7 +208,7 @@ import pandas as pd
 from db import get_connection
 
     # --- Recent Activities & Reminders Section ---
-st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
+  st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
 
     # --- Reconnect to DB (you already closed it earlier) ---
     conn = get_connection()
