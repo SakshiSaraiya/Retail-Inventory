@@ -331,9 +331,9 @@ st.markdown('</div>', unsafe_allow_html=True)
 
     # --- Logout ---
 st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Logout"):
-        st.session_state["is_logged_in"] = False
-        st.session_state["user_id"] = None
-        st.rerun()
+if st.button("Logout"):
+    st.session_state["is_logged_in"] = False
+    st.session_state["user_id"] = None
+    st.rerun()
 
 
