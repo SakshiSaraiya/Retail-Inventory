@@ -207,69 +207,61 @@ from db import get_connection
     # --- Recent Activities & To-do Reminders Section ---
 st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
 
-conn = get_connection()
-user_id = st.session_state.get("user_id")
+# Recent Activities and To-Do Reminders (Side-by-side Cards)
+act_col, todo_col = st.columns(2)
 
-# Fetch recent data
-recent_sales = pd.read_sql("""
-    SELECT sale_date, quantity_sold, p.NAME 
-    FROM Sales s
-    JOIN Products p ON s.product_id = p.product_id
-    WHERE s.user_id = %s
-    ORDER BY sale_date DESC LIMIT 3
+# -------- Recent Activities --------
+sales_data = pd.read_sql("""
+    SELECT sale_date, quantity_sold, NAME 
+    FROM Sales 
+    JOIN Products ON Sales.product_id = Products.product_id
+    WHERE Sales.user_id = %s
+    ORDER BY sale_date DESC LIMIT 5
 """, conn, params=(user_id,))
 
-recent_purchases = pd.read_sql("""
-    SELECT order_date, quantity_purchased, vendor_name
-    FROM Purchases
+purchase_data = pd.read_sql("""
+    SELECT order_date, quantity_purchased, vendor_name 
+    FROM Purchases 
     WHERE user_id = %s
-    ORDER BY order_date DESC LIMIT 3
+    ORDER BY order_date DESC LIMIT 5
 """, conn, params=(user_id,))
 
-recent_expenses = pd.read_sql("""
-    SELECT expense_date, amount, category
-    FROM Expenses
+expense_data = pd.read_sql("""
+    SELECT expense_date, amount, category 
+    FROM Expenses 
     WHERE user_id = %s
-    ORDER BY expense_date DESC LIMIT 3
+    ORDER BY expense_date DESC LIMIT 5
 """, conn, params=(user_id,))
 
-# Layout
-col1, col2 = st.columns([2, 1])
+with act_col:
+    st.markdown("<div class='info-card'><b>Recent Activities</b>", unsafe_allow_html=True)
+    if not sales_data.empty:
+        st.markdown("<div class='sub-box'><b>Sales</b><br>" + "<br>".join(
+            f"{pd.to_datetime(row['sale_date']).strftime('%d %b')} – {row['quantity_sold']} units of <b>{row['NAME']}</b>" 
+            for i, row in sales_data.iterrows()) + "</div>", unsafe_allow_html=True)
+    if not purchase_data.empty:
+        st.markdown("<div class='sub-box'><b>Purchases</b><br>" + "<br>".join(
+            f"{pd.to_datetime(row['order_date']).strftime('%d %b')} – {row['quantity_purchased']} units from <b>{row['vendor_name']}</b>" 
+            for i, row in purchase_data.iterrows()) + "</div>", unsafe_allow_html=True)
+    if not expense_data.empty:
+        st.markdown("<div class='sub-box'><b>Expenses</b><br>" + "<br>".join(
+            f"{pd.to_datetime(row['expense_date']).strftime('%d %b')} – ₹{row['amount']:,.2f} on <b>{row['category']}</b>" 
+            for i, row in expense_data.iterrows()) + "</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-with col1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Recent Activities</div>', unsafe_allow_html=True)
+# -------- To-do Reminders --------
+with todo_col:
+    st.markdown("""
+        <div class="info-card">
+            <b>To-do Reminders</b>
+            <div class="sub-box">Reconcile last month's vendor payments</div>
+            <div class="sub-box">Update product pricing</div>
+            <div class="sub-box">Follow up with suppliers</div>
+            <div class="sub-box">Upload next month expenses</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown('<div class="subheading">Sales</div>', unsafe_allow_html=True)
-    for _, row in recent_sales.iterrows():
-        st.markdown(f"<div class='entry-line'>{row['sale_date'].strftime('%d %b')} – {row['quantity_sold']} units of <b>{row['NAME']}</b></div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="subheading">Purchases</div>', unsafe_allow_html=True)
-    for _, row in recent_purchases.iterrows():
-        st.markdown(f"<div class='entry-line'>{row['order_date'].strftime('%d %b')} – {row['quantity_purchased']} units from <b>{row['vendor_name']}</b></div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="subheading">Expenses</div>', unsafe_allow_html=True)
-    for _, row in recent_expenses.iterrows():
-        st.markdown(f"<div class='entry-line'>{row['expense_date'].strftime('%d %b')} – ₹{row['amount']:,.2f} on <b>{row['category']}</b></div>", unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">To-do Reminders</div>', unsafe_allow_html=True)
-
-    reminders = [
-        "Reconcile last month's vendor payments",
-        "Update product pricing ",
-        "Follow up with suppliers",
-        "Upload next month expenses"
-    ]
-
-    for item in reminders:
-        st.markdown(f"<div class='reminder-item'>{item}</div>", unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
+st.markdown("<br><br>")
     # --- Logout Button ---
 st.markdown("<br>", unsafe_allow_html=True)
 if st.button("Logout"):
