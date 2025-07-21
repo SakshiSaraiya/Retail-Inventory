@@ -244,6 +244,37 @@ with st.container():
         st.markdown(activity_card_style, unsafe_allow_html=True)
         st.markdown("<div class='activity-card'>", unsafe_allow_html=True)
 
+        # Make sure `conn` and `user_id` are already defined above
+
+# Recent Sales
+recent_sales = pd.read_sql("""
+    SELECT s.sale_date, p.NAME, s.quantity_sold
+    FROM Sales s
+    JOIN Products p ON s.product_id = p.product_id
+    WHERE s.user_id = %s
+    ORDER BY s.sale_date DESC
+    LIMIT 5
+""", conn, params=(user_id,))
+
+# Recent Purchases
+recent_purchases = pd.read_sql("""
+    SELECT order_date, vendor_name, quantity_purchased
+    FROM Purchases
+    WHERE user_id = %s
+    ORDER BY order_date DESC
+    LIMIT 5
+""", conn, params=(user_id,))
+
+# Recent Expenses
+recent_expenses = pd.read_sql("""
+    SELECT Expense_date, category, amount
+    FROM expenses
+    WHERE user_id = %s
+    ORDER BY expense_date DESC
+    LIMIT 5
+""", conn, params=(user_id,))
+
+
         # Sales
         st.markdown("<div class='section-label'>Sales</div>", unsafe_allow_html=True)
         for i, row in recent_sales.iterrows():
