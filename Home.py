@@ -203,87 +203,131 @@ st.markdown("## 🕒 Recent Activities & Reminders")
 
 
 
-# ---------- RECENT ACTIVITIES ----------
-import pandas as pd
 import streamlit as st
-from db import get_connection
-
-st.markdown("## 🕒 Recent Activities & Reminders")
+import pandas as pd
+from db_connector import get_connection
 
 conn = get_connection()
 user_id = st.session_state.get("user_id")
 
-st.markdown("### 📌 Recent Activities")
-with st.container():
-    col1, col2, col3 = st.columns(3)
+# --- Title ---
+st.markdown("""
+    <h2 style='color: #0F172A;'>Recent Activities & Reminders</h2>
+""", unsafe_allow_html=True)
 
-    with col1:
-        st.markdown("**🛒 Recent Sales**")
-        sales = pd.read_sql("""
-            SELECT s.sale_date, p.NAME, s.quantity_sold 
-            FROM Sales s
-            JOIN Products p ON s.product_id = p.product_id
-            WHERE s.user_id = %s
-            ORDER BY s.sale_date DESC 
-            LIMIT 5
-        """, conn, params=(user_id,))
-        for _, row in sales.iterrows():
-            st.markdown(f"- {row['sale_date'].strftime('%d %b')} — {row['quantity_sold']} units of **{row['NAME']}**")
+# --- CSS Styling ---
+st.markdown("""
+    <style>
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 30px;
+            color: #0F172A;
+        }
+        .sub-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 20px;
+            color: #1E293B;
+        }
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-top: 10px;
+        }
+        .activity-item, .item {
+            margin: 6px 0;
+            font-size: 15px;
+            color: #334155;
+        }
+        .activity-item b, .item b {
+            color: #0F172A;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-    with col2:
-        st.markdown("**📦 Recent Purchases**")
-        purchases = pd.read_sql("""
-            SELECT order_date, vendor_name, quantity_purchased 
-            FROM Purchases 
-            WHERE user_id = %s
-            ORDER BY order_date DESC 
-            LIMIT 5
-        """, conn, params=(user_id,))
-        for _, row in purchases.iterrows():
-            st.markdown(f"- {row['order_date'].strftime('%d %b')} — {row['quantity_purchased']} units from **{row['vendor_name']}**")
+# --- Recent Activities ---
+st.markdown("<div class='section-title'>Recent Activities</div>", unsafe_allow_html=True)
+st.markdown("<div class='grid'>", unsafe_allow_html=True)
 
-    with col3:
-        st.markdown("**💸 Recent Expenses**")
-        expenses = pd.read_sql("""
-            SELECT expense_date, category, amount 
-            FROM Expenses 
-            WHERE user_id = %s
-            ORDER BY expense_date DESC 
-            LIMIT 5
-        """, conn, params=(user_id,))
-        for _, row in expenses.iterrows():
-            st.markdown(f"- {row['expense_date'].strftime('%d %b')} — ₹{row['amount']} on **{row['category']}**")
-
-# ---------- TO-DO REMINDERS ----------
-st.markdown("---")
-st.markdown("### 📝 To-do Reminders")
-with st.container():
-    reminders = []
-
-    # Low stock products
-    stock_check = pd.read_sql("""
-        SELECT p.NAME, 
-               COALESCE(SUM(pu.quantity_purchased), 0) - COALESCE(SUM(s.quantity_sold), 0) AS live_stock
-        FROM Products p
-        LEFT JOIN Purchases pu ON p.product_id = pu.product_id
-        LEFT JOIN Sales s ON p.product_id = s.product_id
-        WHERE p.user_id = %s
-        GROUP BY p.product_id
-        HAVING live_stock < 10
+# --- Recent Sales ---
+st.markdown("<div class='card'><div class='sub-title'>Recent Sales</div>", unsafe_allow_html=True)
+try:
+    sales = pd.read_sql("""
+        SELECT s.sale_date, p.NAME, s.quantity_sold
+        FROM Sales s
+        JOIN Products p ON s.product_id = p.product_id
+        WHERE s.user_id = %s
+        ORDER BY s.sale_date DESC
+        LIMIT 5
     """, conn, params=(user_id,))
-    for _, row in stock_check.iterrows():
-        reminders.append(f"⚠️ Low inventory: **{row['NAME']}** (Only {int(row['live_stock'])} left)")
 
-    # Add fixed reminders
-    reminders.append("✅ Review weekly sales performance")
-    reminders.append("📌 Follow up on unpaid purchases")
-    reminders.append("💡 Optimize pricing for high-demand items")
+    for _, row in sales.iterrows():
+        st.markdown(f"<div class='activity-item'>{row['sale_date'].strftime('%d %b')} — <b>{row['quantity_sold']} units</b> of <b>{row['NAME']}</b></div>", unsafe_allow_html=True)
+except Exception as e:
+    st.warning("Unable to fetch sales data.")
 
-    # Show reminders in professional white card
-    with st.container():
-        for task in reminders:
-            st.markdown(f"- {task}")
+st.markdown("</div>", unsafe_allow_html=True)
 
+# --- Recent Purchases ---
+st.markdown("<div class='card'><div class='sub-title'>Recent Purchases</div>", unsafe_allow_html=True)
+try:
+    purchases = pd.read_sql("""
+        SELECT order_date, vendor_name, quantity_purchased
+        FROM Purchases
+        WHERE user_id = %s
+        ORDER BY order_date DESC
+        LIMIT 5
+    """, conn, params=(user_id,))
+
+    for _, row in purchases.iterrows():
+        st.markdown(f"<div class='activity-item'>{row['order_date'].strftime('%d %b')} — <b>{row['quantity_purchased']} units</b> from <b>{row['vendor_name']}</b></div>", unsafe_allow_html=True)
+except:
+    st.warning("Unable to fetch purchase data.")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --- Recent Expenses ---
+st.markdown("<div class='card'><div class='sub-title'>Recent Expenses</div>", unsafe_allow_html=True)
+try:
+    expenses = pd.read_sql("""
+        SELECT expense_date, category, amount
+        FROM Expenses
+        WHERE user_id = %s
+        ORDER BY expense_date DESC
+        LIMIT 5
+    """, conn, params=(user_id,))
+
+    for _, row in expenses.iterrows():
+        st.markdown(f"<div class='activity-item'>{row['expense_date'].strftime('%d %b')} — ₹{row['amount']} on <b>{row['category']}</b></div>", unsafe_allow_html=True)
+except:
+    st.warning("Unable to fetch expense data.")
+
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+# --- To-do Reminders ---
+st.markdown('<div class="section-title">To-do Reminders</div>', unsafe_allow_html=True)
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
+reminders = [
+    "Review weekly sales performance",
+    "Follow up on unpaid purchases",
+    "Optimize pricing for high-demand items"
+]
+
+for i, task in enumerate(reminders, 1):
+    st.markdown(f"""
+        <div class='item'><span style='font-weight: 600; color: #0F172A;'>{i}.</span> {task}</div>
+    """, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
     # --- Logout ---
     st.markdown("<br>", unsafe_allow_html=True)
