@@ -210,124 +210,76 @@ from db import get_connection
 conn = get_connection()
 user_id = st.session_state.get("user_id")
 
-# --- Title ---
-st.markdown("""
-    <h2 style='color: #0F172A;'>Recent Activities & Reminders</h2>
-""", unsafe_allow_html=True)
+# Inside your Home.py layout after login
 
-# --- CSS Styling ---
-st.markdown("""
-    <style>
-        .section-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-top: 30px;
-            color: #0F172A;
-        }
-        .sub-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 20px;
-            color: #1E293B;
-        }
-        .card {
+with st.container():
+    st.markdown("## Recent Activities", unsafe_allow_html=True)
+    
+    with st.container():
+        activity_card_style = """
+        <style>
+        .activity-card {
             background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             padding: 20px;
-            margin-top: 10px;
+            border-radius: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
         }
-        .activity-item, .item {
-            margin: 6px 0;
-            font-size: 15px;
-            color: #334155;
-        }
-        .activity-item b, .item b {
+        .section-label {
+            font-size: 16px;
+            font-weight: 600;
             color: #0F172A;
+            border-left: 4px solid #0F172A;
+            padding-left: 10px;
+            margin-top: 15px;
+            margin-bottom: 5px;
         }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
+        .activity-line {
+            font-size: 15px;
+            margin-left: 10px;
+            margin-bottom: 5px;
         }
-    </style>
-""", unsafe_allow_html=True)
+        </style>
+        """
+        st.markdown(activity_card_style, unsafe_allow_html=True)
+        st.markdown("<div class='activity-card'>", unsafe_allow_html=True)
 
-# --- Recent Activities ---
-st.markdown("<div class='section-title'>Recent Activities</div>", unsafe_allow_html=True)
-st.markdown("<div class='grid'>", unsafe_allow_html=True)
+        # Sales
+        st.markdown("<div class='section-label'>Sales</div>", unsafe_allow_html=True)
+        for i, row in recent_sales.iterrows():
+            st.markdown(f"<div class='activity-line'>{row['sale_date'].strftime('%d %b')} – {row['quantity_sold']} units of <b>{row['NAME']}</b></div>", unsafe_allow_html=True)
 
-# --- Recent Sales ---
-st.markdown("<div class='card'><div class='sub-title'>Recent Sales</div>", unsafe_allow_html=True)
-try:
-    sales = pd.read_sql("""
-        SELECT s.sale_date, p.NAME, s.quantity_sold
-        FROM Sales s
-        JOIN Products p ON s.product_id = p.product_id
-        WHERE s.user_id = %s
-        ORDER BY s.sale_date DESC
-        LIMIT 5
-    """, conn, params=(user_id,))
+        # Purchases
+        st.markdown("<div class='section-label'>Purchases</div>", unsafe_allow_html=True)
+        for i, row in recent_purchases.iterrows():
+            st.markdown(f"<div class='activity-line'>{row['order_date'].strftime('%d %b')} – {row['quantity_purchased']} units from <b>{row['vendor_name']}</b></div>", unsafe_allow_html=True)
 
-    for _, row in sales.iterrows():
-        st.markdown(f"<div class='activity-item'>{row['sale_date'].strftime('%d %b')} — <b>{row['quantity_sold']} units</b> of <b>{row['NAME']}</b></div>", unsafe_allow_html=True)
-except Exception as e:
-    st.warning("Unable to fetch sales data.")
+        # Expenses
+        st.markdown("<div class='section-label'>Expenses</div>", unsafe_allow_html=True)
+        for i, row in recent_expenses.iterrows():
+            st.markdown(f"<div class='activity-line'>{row['expense_date'].strftime('%d %b')} – ₹{row['amount']:.2f} on <b>{row['category']}</b></div>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Recent Purchases ---
-st.markdown("<div class='card'><div class='sub-title'>Recent Purchases</div>", unsafe_allow_html=True)
-try:
-    purchases = pd.read_sql("""
-        SELECT order_date, vendor_name, quantity_purchased
-        FROM Purchases
-        WHERE user_id = %s
-        ORDER BY order_date DESC
-        LIMIT 5
-    """, conn, params=(user_id,))
-
-    for _, row in purchases.iterrows():
-        st.markdown(f"<div class='activity-item'>{row['order_date'].strftime('%d %b')} — <b>{row['quantity_purchased']} units</b> from <b>{row['vendor_name']}</b></div>", unsafe_allow_html=True)
-except:
-    st.warning("Unable to fetch purchase data.")
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Recent Expenses ---
-st.markdown("<div class='card'><div class='sub-title'>Recent Expenses</div>", unsafe_allow_html=True)
-try:
-    expenses = pd.read_sql("""
-        SELECT expense_date, category, amount
-        FROM Expenses
-        WHERE user_id = %s
-        ORDER BY expense_date DESC
-        LIMIT 5
-    """, conn, params=(user_id,))
-
-    for _, row in expenses.iterrows():
-        st.markdown(f"<div class='activity-item'>{row['expense_date'].strftime('%d %b')} — ₹{row['amount']} on <b>{row['category']}</b></div>", unsafe_allow_html=True)
-except:
-    st.warning("Unable to fetch expense data.")
-
-st.markdown("</div></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # --- To-do Reminders ---
-st.markdown('<div class="section-title">To-do Reminders</div>', unsafe_allow_html=True)
-st.markdown('<div class="card">', unsafe_allow_html=True)
+
+st.markdown("## To-do Reminders", unsafe_allow_html=True)
 
 reminders = [
-    "Review weekly sales performance",
-    "Follow up on unpaid purchases",
-    "Optimize pricing for high-demand items"
+    "📌 Reconcile last month's vendor payments",
+    "📌 Update product pricing for Q3",
+    "📌 Follow up with supplier: Ramesh Shoes",
+    "📌 Upload July expenses",
 ]
 
-for i, task in enumerate(reminders, 1):
-    st.markdown(f"""
-        <div class='item'><span style='font-weight: 600; color: #0F172A;'>{i}.</span> {task}</div>
-    """, unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container():
+    todo_card = """
+    <div style='background-color:white; padding:20px; border-radius:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);'>
+    """
+    for task in reminders:
+        todo_card += f"<div style='font-size:15px; margin-bottom:8px;'>✔️ {task}</div>"
+    todo_card += "</div>"
+    st.markdown(todo_card, unsafe_allow_html=True)
 
     # --- Logout ---
 st.markdown("<br>", unsafe_allow_html=True)
