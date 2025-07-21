@@ -306,8 +306,8 @@ with st.container():
     todo_card = """
     <div style='background-color:white; padding:20px; border-radius:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);'>
      """
-     for task in reminders:
-         todo_card += f"<div style='font-size:15px; margin-bottom:8px;'>✔️ {task}</div>"
+    for task in reminders:
+        todo_card += f"<div style='font-size:15px; margin-bottom:8px;'>✔️ {task}</div>"
     todo_card += "</div>"
     st.markdown(todo_card, unsafe_allow_html=True)
 
