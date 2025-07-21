@@ -207,116 +207,118 @@ import streamlit as st
 import pandas as pd
 from db import get_connection
 
-conn = get_connection()
-user_id = st.session_state.get("user_id")
+    # --- Recent Activities & Reminders Section ---
+st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
 
-# Inside your Home.py layout after login
+    # --- Reconnect to DB (you already closed it earlier) ---
+    conn = get_connection()
+    user_id = st.session_state.get("user_id")
 
-with st.container():
-    st.markdown("## Recent Activities", unsafe_allow_html=True)
-    
+    if conn:
+        # Run Queries
+        recent_sales = pd.read_sql("""
+            SELECT s.sale_date, p.NAME, s.quantity_sold
+            FROM Sales s
+            JOIN Products p ON s.product_id = p.product_id
+            WHERE s.user_id = %s
+            ORDER BY s.sale_date DESC
+            LIMIT 5
+        """, conn, params=(user_id,))
+
+        recent_purchases = pd.read_sql("""
+            SELECT order_date, vendor_name, quantity_purchased
+            FROM Purchases
+            WHERE user_id = %s
+            ORDER BY order_date DESC
+            LIMIT 5
+        """, conn, params=(user_id,))
+
+        recent_expenses = pd.read_sql("""
+            SELECT expense_date, category, amount
+            FROM Expenses
+            WHERE user_id = %s
+            ORDER BY expense_date DESC
+            LIMIT 5
+        """, conn, params=(user_id,))
+
+        # --- Styling ---
+        st.markdown("""
+            <style>
+            .activity-card {
+                background-color: white;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                margin-bottom: 20px;
+            }
+            .section-label {
+                font-size: 16px;
+                font-weight: 600;
+                color: #0F172A;
+                border-left: 4px solid #0F172A;
+                padding-left: 10px;
+                margin-top: 15px;
+                margin-bottom: 5px;
+            }
+            .activity-line {
+                font-size: 15px;
+                margin-left: 10px;
+                margin-bottom: 5px;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        with st.container():
+            st.markdown("<div class='activity-card'>", unsafe_allow_html=True)
+
+            st.markdown("<div class='section-label'>Sales</div>", unsafe_allow_html=True)
+            for _, row in recent_sales.iterrows():
+                st.markdown(
+                    f"<div class='activity-line'>{row['sale_date'].strftime('%d %b')} – {row['quantity_sold']} units of <b>{row['NAME']}</b></div>",
+                    unsafe_allow_html=True
+                )
+
+            st.markdown("<div class='section-label'>Purchases</div>", unsafe_allow_html=True)
+            for _, row in recent_purchases.iterrows():
+                st.markdown(
+                    f"<div class='activity-line'>{row['order_date'].strftime('%d %b')} – {row['quantity_purchased']} units from <b>{row['vendor_name']}</b></div>",
+                    unsafe_allow_html=True
+                )
+
+            st.markdown("<div class='section-label'>Expenses</div>", unsafe_allow_html=True)
+            for _, row in recent_expenses.iterrows():
+                st.markdown(
+                    f"<div class='activity-line'>{row['expense_date'].strftime('%d %b')} – ₹{row['amount']:.2f} on <b>{row['category']}</b></div>",
+                    unsafe_allow_html=True
+                )
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- To-do Reminders ---
+    st.markdown("## To-do Reminders", unsafe_allow_html=True)
+
+    reminders = [
+        "Reconcile last month's vendor payments",
+        "Update product pricing for Q3",
+        "Follow up with supplier: Ramesh Shoes",
+        "Upload July expenses",
+    ]
+
     with st.container():
-        activity_card_style = """
-        <style>
-        .activity-card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-        .section-label {
-            font-size: 16px;
-            font-weight: 600;
-            color: #0F172A;
-            border-left: 4px solid #0F172A;
-            padding-left: 10px;
-            margin-top: 15px;
-            margin-bottom: 5px;
-        }
-        .activity-line {
-            font-size: 15px;
-            margin-left: 10px;
-            margin-bottom: 5px;
-        }
-        </style>
+        todo_card = """
+        <div style='background-color:white; padding:20px; border-radius:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);'>
         """
-        st.markdown(activity_card_style, unsafe_allow_html=True)
-        st.markdown("<div class='activity-card'>", unsafe_allow_html=True)
+        for task in reminders:
+            todo_card += f"<div style='font-size:15px; margin-bottom:8px;'>✔️ {task}</div>"
+        todo_card += "</div>"
+        st.markdown(todo_card, unsafe_allow_html=True)
 
-        # Make sure `conn` and `user_id` are already defined above
+    # --- Logout Button ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("Logout"):
+        st.session_state["is_logged_in"] = False
+        st.session_state["user_id"] = None
+        st.rerun()
 
-# Recent Sales
-recent_sales = pd.read_sql("""
-    SELECT s.sale_date, p.NAME, s.quantity_sold
-    FROM Sales s
-    JOIN Products p ON s.product_id = p.product_id
-    WHERE s.user_id = %s
-    ORDER BY s.sale_date DESC
-    LIMIT 5
-""", conn, params=(user_id,))
-
-# Recent Purchases
-recent_purchases = pd.read_sql("""
-    SELECT order_date, vendor_name, quantity_purchased
-    FROM Purchases
-    WHERE user_id = %s
-    ORDER BY order_date DESC
-    LIMIT 5
-""", conn, params=(user_id,))
-
-# Recent Expenses
-recent_expenses = pd.read_sql("""
-    SELECT Expense_date, category, amount
-    FROM expenses
-    WHERE user_id = %s
-    ORDER BY expense_date DESC
-    LIMIT 5
-""", conn, params=(user_id,))
-
-
-        # Sales
-        st.markdown("<div class='section-label'>Sales</div>", unsafe_allow_html=True)
-        for i, row in recent_sales.iterrows():
-            st.markdown(f"<div class='activity-line'>{row['sale_date'].strftime('%d %b')} – {row['quantity_sold']} units of <b>{row['NAME']}</b></div>", unsafe_allow_html=True)
-
-        # Purchases
-        st.markdown("<div class='section-label'>Purchases</div>", unsafe_allow_html=True)
-        for i, row in recent_purchases.iterrows():
-            st.markdown(f"<div class='activity-line'>{row['order_date'].strftime('%d %b')} – {row['quantity_purchased']} units from <b>{row['vendor_name']}</b></div>", unsafe_allow_html=True)
-
-        # Expenses
-        st.markdown("<div class='section-label'>Expenses</div>", unsafe_allow_html=True)
-        for i, row in recent_expenses.iterrows():
-            st.markdown(f"<div class='activity-line'>{row['expense_date'].strftime('%d %b')} – ₹{row['amount']:.2f} on <b>{row['category']}</b></div>", unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-# --- To-do Reminders ---
-
-st.markdown("## To-do Reminders", unsafe_allow_html=True)
-
-reminders = [
-    "📌 Reconcile last month's vendor payments",
-    "📌 Update product pricing for Q3",
-    "📌 Follow up with supplier: Ramesh Shoes",
-    "📌 Upload July expenses",
-]
-
-with st.container():
-    todo_card = """
-    <div style='background-color:white; padding:20px; border-radius:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);'>
-    """
-    for task in reminders:
-        todo_card += f"<div style='font-size:15px; margin-bottom:8px;'>✔️ {task}</div>"
-    todo_card += "</div>"
-    st.markdown(todo_card, unsafe_allow_html=True)
-
-    # --- Logout ---
-st.markdown("<br>", unsafe_allow_html=True)
-if st.button("Logout"):
-    st.session_state["is_logged_in"] = False
-    st.session_state["user_id"] = None
-    st.rerun()
 
 
