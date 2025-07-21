@@ -199,6 +199,82 @@ if st.session_state["is_logged_in"]:
     col3.markdown(f"<div style='{card_style}'>📉<br>Total Expenses<br><span style='font-size:26px'>₹{total_expenses:,.2f}</span></div>", unsafe_allow_html=True)
 
 
+st.markdown("## 🕒 Recent Activities & Reminders")
+
+
+
+# ---------- RECENT ACTIVITIES ----------
+st.markdown("### 📌 Recent Activities")
+with st.container():
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("**🛒 Recent Sales**")
+        sales = pd.read_sql("""
+            SELECT s.sale_date, p.NAME, s.quantity_sold 
+            FROM Sales s
+            JOIN Products p ON s.product_id = p.product_id
+            WHERE s.user_id = %s
+            ORDER BY s.sale_date DESC 
+            LIMIT 5
+        """, conn, params=(user_id,))
+        for _, row in sales.iterrows():
+            st.markdown(f"- {row['sale_date'].strftime('%d %b')} — {row['quantity_sold']} units of **{row['NAME']}**")
+
+    with col2:
+        st.markdown("**📦 Recent Purchases**")
+        purchases = pd.read_sql("""
+            SELECT order_date, vendor_name, quantity_purchased 
+            FROM Purchases 
+            WHERE user_id = %s
+            ORDER BY order_date DESC 
+            LIMIT 5
+        """, conn, params=(user_id,))
+        for _, row in purchases.iterrows():
+            st.markdown(f"- {row['order_date'].strftime('%d %b')} — {row['quantity_purchased']} units from **{row['vendor_name']}**")
+
+    with col3:
+        st.markdown("**💸 Recent Expenses**")
+        expenses = pd.read_sql("""
+            SELECT expense_date, category, amount 
+            FROM Expenses 
+            WHERE user_id = %s
+            ORDER BY expense_date DESC 
+            LIMIT 5
+        """, conn, params=(user_id,))
+        for _, row in expenses.iterrows():
+            st.markdown(f"- {row['expense_date'].strftime('%d %b')} — ₹{row['amount']} on **{row['category']}**")
+
+# ---------- TO-DO REMINDERS ----------
+st.markdown("---")
+st.markdown("### 📝 To-do Reminders")
+with st.container():
+    reminders = []
+
+    # Low stock products
+    stock_check = pd.read_sql("""
+        SELECT p.NAME, 
+               COALESCE(SUM(pu.quantity_purchased), 0) - COALESCE(SUM(s.quantity_sold), 0) AS live_stock
+        FROM Products p
+        LEFT JOIN Purchases pu ON p.product_id = pu.product_id
+        LEFT JOIN Sales s ON p.product_id = s.product_id
+        WHERE p.user_id = %s
+        GROUP BY p.product_id
+        HAVING live_stock < 10
+    """, conn, params=(user_id,))
+    for _, row in stock_check.iterrows():
+        reminders.append(f"⚠️ Low inventory: **{row['NAME']}** (Only {int(row['live_stock'])} left)")
+
+    # Add fixed reminders
+    reminders.append("✅ Review weekly sales performance")
+    reminders.append("📌 Follow up on unpaid purchases")
+    reminders.append("💡 Optimize pricing for high-demand items")
+
+    # Show reminders in professional white card
+    with st.container():
+        for task in reminders:
+            st.markdown(f"- {task}")
+
 
     # --- Logout ---
     st.markdown("<br>", unsafe_allow_html=True)
