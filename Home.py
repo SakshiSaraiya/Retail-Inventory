@@ -214,7 +214,7 @@ st.markdown("## 🕒 Recent Activities & Reminders", unsafe_allow_html=True)
 conn = get_connection()
 user_id = st.session_state.get("user_id")
 
-   if conn:
+      if conn:
         # Run Queries
         recent_sales = pd.read_sql("""
             SELECT s.sale_date, p.NAME, s.quantity_sold
@@ -314,11 +314,11 @@ user_id = st.session_state.get("user_id")
         st.markdown(todo_card, unsafe_allow_html=True)
 
     # --- Logout Button ---
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Logout"):
-        st.session_state["is_logged_in"] = False
-        st.session_state["user_id"] = None
-        st.rerun()
+ st.markdown("<br>", unsafe_allow_html=True)
+if st.button("Logout"):
+     st.session_state["is_logged_in"] = False
+     st.session_state["user_id"] = None
+     st.rerun()
 
 
 
