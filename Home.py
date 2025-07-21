@@ -205,7 +205,7 @@ st.markdown("## 🕒 Recent Activities & Reminders")
 
 import streamlit as st
 import pandas as pd
-from db_connector import get_connection
+from db import get_connection
 
 conn = get_connection()
 user_id = st.session_state.get("user_id")
