@@ -160,11 +160,12 @@ if not st.session_state["is_logged_in"]:
 if st.session_state["is_logged_in"]:
     st.markdown("<div class='section-title'>Your Retail Summary</div>", unsafe_allow_html=True)
 
+
     import pandas as pd
     import plotly.express as px
     from db import get_connection
 
-    # --- Fetch Summary Stats ---
+    # --- Fetch Data from MySQL ---
     conn = get_connection()
     total_products, total_sales, total_expenses = 0, 0, 0
     if conn:
@@ -181,32 +182,29 @@ if st.session_state["is_logged_in"]:
         cursor.close()
         conn.close()
 
-    # --- Display Metrics ---
+    # --- Professional Metric Cards ---
+    card_style = """
+        background-color: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        text-align: center;
+        font-weight: 600;
+        color: #0F172A;
+        font-size: 20px;
+    """
     col1, col2, col3 = st.columns(3)
-    col1.metric("🛒 Total Products", total_products)
-    col2.metric("💰 Total Sales", f"₹{total_sales:,.2f}")
-    col3.metric("📉 Total Expenses", f"₹{total_expenses:,.2f}")
+    col1.markdown(f"<div style='{card_style}'>🛒<br>Total Products<br><span style='font-size:26px'>{total_products}</span></div>", unsafe_allow_html=True)
+    col2.markdown(f"<div style='{card_style}'>💰<br>Total Sales<br><span style='font-size:26px'>₹{total_sales:,.2f}</span></div>", unsafe_allow_html=True)
+    col3.markdown(f"<div style='{card_style}'>📉<br>Total Expenses<br><span style='font-size:26px'>₹{total_expenses:,.2f}</span></div>", unsafe_allow_html=True)
 
-    # --- Sales Trend Visualization (Dummy Example) ---
-    sample_data = pd.DataFrame({
-        "Month": pd.date_range(start="2024-01-01", periods=6, freq='M').strftime('%b %Y'),
-        "Sales": [15000, 18000, 12000, 25000, 21000, 30000]
-    })
-    st.markdown("<div class='section-title'>📈 Sales Trend</div>", unsafe_allow_html=True)
-    fig = px.line(sample_data, x="Month", y="Sales", markers=True, title="Monthly Sales Trend")
-    fig.update_layout(
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font=dict(color="#1E293B"),
-        title_font=dict(size=18),
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False)
-    )
-    st.plotly_chart(fig, use_container_width=True)
 
-    # --- Logout Button ---
+
+    # --- Logout ---
+    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Logout"):
         st.session_state["is_logged_in"] = False
         st.session_state["user_id"] = None
         st.rerun()
+
 
