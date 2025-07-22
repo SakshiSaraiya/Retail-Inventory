@@ -102,7 +102,7 @@ live_stock = pd.merge(products, purchase_qty, on='product_id', how='left')
 live_stock = pd.merge(live_stock, sales_qty, on='product_id', how='left')
 live_stock['total_purchased'].fillna(0, inplace=True)
 live_stock['total_sold'].fillna(0, inplace=True)
-live_stock['live_stock'] = live_stock['stock'] + live_stock['total_purchased'] - live_stock['total_sold']
+live_stock['live_stock'] = live_stock['total_purchased'] - live_stock['total_sold']
 live_stock['holding_cost'] = live_stock['live_stock'] * live_stock['cost_price']
 
 avg_inventory = (live_stock['live_stock'].mean() + live_stock['stock'].mean()) / 2
