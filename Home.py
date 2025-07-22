@@ -1,9 +1,12 @@
-import streamlit as st  
+import streamlit as st
 from auth import register_user, login_user
+import pandas as pd
+import plotly.express as px
+from db import get_connection
 
 # --- Page Config ---
 st.set_page_config(
-    page_title="Home | Retail Management",
+    page_title="Retail Pulse | Home",
     layout="wide",
     initial_sidebar_state="expanded" if st.session_state.get("is_logged_in", False) else "collapsed"
 )
@@ -14,7 +17,7 @@ if "is_logged_in" not in st.session_state:
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = None
 
-# --- Custom Styling ---
+# --- Custom Styling & Branding ---
 st.markdown("""
     <style>
     .block-container {
@@ -24,13 +27,14 @@ st.markdown("""
     h1 {
         color: #0F172A !important;
         font-weight: 900;
-        font-size: 2.4rem !important;
+        font-size: 2.6rem !important;
         margin-bottom: 0.4rem;
     }
     .subheading {
-        font-size: 1.05rem;
+        font-size: 1.15rem;
         color: #475569;
         margin-bottom: 2rem;
+        font-weight: 500;
     }
     .feature-card {
         background-color: #FFFFFF;
@@ -44,31 +48,15 @@ st.markdown("""
         height: 180px;
     }
     .section-title {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: #1E293B;
         margin: 2rem 0 1rem;
     }
-    .nav-card {
-        background-color: #FFFFFF;
-        color: #0F172A;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    .brand-logo {
+        width: 200px;
+        margin-top: -1rem;
         margin-bottom: 1rem;
-        height: 220px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-    .nav-card h4 {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.2rem;
-    }
-    .nav-card p {
-        font-size: 0.95rem;
-        margin-bottom: 1rem;
-        color: #0F172A ;
     }
     .nav-card a button {
         background-color: #0F172A;
@@ -78,7 +66,6 @@ st.markdown("""
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
-        transition: 0.3s;
     }
     .nav-card a button:hover {
         background-color: #1E293B;
@@ -93,9 +80,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Main Header ---
-st.markdown("<h1>Welcome to All-in-One Retail Management</h1>", unsafe_allow_html=True)
-st.markdown("<div class='subheading'>Your centralized platform for inventory, finance, and vendor performance insights.</div>", unsafe_allow_html=True)
+# --- Branding with Logo ---
+st.image("https://i.imgur.com/tKTds1L.png", width=180)  # Retail Pulse logo (upload your own if needed)
+st.markdown("<h1>Retail Pulse</h1>", unsafe_allow_html=True)
+st.markdown("<div class='subheading'>Insightful Retail. Smarter Decisions.</div>", unsafe_allow_html=True)
 
 # --- Features Summary ---
 st.markdown("<div class='section-title'>Key Features</div>", unsafe_allow_html=True)
@@ -156,15 +144,10 @@ if not st.session_state["is_logged_in"]:
             else:
                 st.error(message)
 
-# --- Post-Login Summary Dashboard ---
+# --- Post-Login Retail Summary ---
 if st.session_state["is_logged_in"]:
     st.markdown("<div class='section-title'>Your Retail Summary</div>", unsafe_allow_html=True)
 
- import pandas as pd
- import plotly.express as px
- from db import get_connection
-
-    # --- Fetch Data from MySQL ---
     conn = get_connection()
     total_products, total_sales, total_expenses = 0, 0, 0
     if conn:
@@ -181,7 +164,6 @@ if st.session_state["is_logged_in"]:
         cursor.close()
         conn.close()
 
-    # --- Professional Metric Cards ---
     card_style = """
         background-color: white;
         padding: 25px;
@@ -197,69 +179,9 @@ if st.session_state["is_logged_in"]:
     col2.markdown(f"<div style='{card_style}'>💰<br>Total Sales<br><span style='font-size:26px'>₹{total_sales:,.2f}</span></div>", unsafe_allow_html=True)
     col3.markdown(f"<div style='{card_style}'>📉<br>Total Expenses<br><span style='font-size:26px'>₹{total_expenses:,.2f}</span></div>", unsafe_allow_html=True)
 
-# Recent Activities (from Sales table)
- from db import get_connection
-
-    # --- Fetch Data from MySQL ---
-    conn = get_connection()
-
-try:
-    user_id = st.session_state.user_id
-    query = """
-        SELECT s.sale_date, p.NAME, s.quantity_sold
-        FROM Sales s
-        JOIN Products p ON s.product_id = p.product_id
-        WHERE s.user_id = %s
-        ORDER BY s.sale_date DESC
-        LIMIT 5
-    """
-    recent_sales = pd.read_sql(query, conn, params=(user_id,))
-except Exception as e:
-    recent_sales = pd.DataFrame()
-
-# ----------------------------
-# To-Do Items (manual)
-todos = [
-    "Reorder stock for low inventory items",
-    "Verify vendor payments",
-    "Check today's sales reports",
-    "Schedule team meeting",
-    "Update product catalog"
-]
-
-st.markdown('<div class="section-title">Daily Overview</div>', unsafe_allow_html=True)
-left_col, right_col = st.columns(2)
-
-with left_col:
-    st.markdown('<div class="card"><h4 style="margin-top:0;">Recent Activities</h4>', unsafe_allow_html=True)
-    if not recent_sales.empty:
-        for _, row in recent_sales.iterrows():
-            sale_date = pd.to_datetime(row['sale_date']).strftime('%d %b %Y')
-            st.markdown(f"<div class='box-content'><strong>{row['NAME']}</strong> - {row['quantity_sold']} pcs on {sale_date}</div>", unsafe_allow_html=True)
-    else:
-        st.markdown("<div class='box-content'>No recent sales data.</div>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with right_col:
-    st.markdown('<div class="card"><h4 style="margin-top:0;">To-do Reminders</h4>', unsafe_allow_html=True)
-    for task in todos:
-        st.markdown(f"<div class='box-content'>{task}</div>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown("<br><br>", unsafe_allow_html=True)
-
-# Footer
-st.markdown("""
----
-<p style='text-align: center; color: #94A3B8;'>© 2025 Retail Analytics | All rights reserved</p>
-""", unsafe_allow_html=True)
-
-    # --- Logout Button ---
+# --- Logout Button ---
 st.markdown("<br>", unsafe_allow_html=True)
 if st.button("Logout"):
     st.session_state["is_logged_in"] = False
     st.session_state["user_id"] = None
     st.rerun()
-
-
-
