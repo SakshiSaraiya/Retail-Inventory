@@ -160,10 +160,9 @@ if not st.session_state["is_logged_in"]:
 if st.session_state["is_logged_in"]:
     st.markdown("<div class='section-title'>Your Retail Summary</div>", unsafe_allow_html=True)
 
-
-    import pandas as pd
-    import plotly.express as px
-    from db import get_connection
+ import pandas as pd
+ import plotly.express as px
+ from db import get_connection
 
     # --- Fetch Data from MySQL ---
     conn = get_connection()
@@ -199,6 +198,11 @@ if st.session_state["is_logged_in"]:
     col3.markdown(f"<div style='{card_style}'>📉<br>Total Expenses<br><span style='font-size:26px'>₹{total_expenses:,.2f}</span></div>", unsafe_allow_html=True)
 
 # Recent Activities (from Sales table)
+ from db import get_connection
+
+    # --- Fetch Data from MySQL ---
+    conn = get_connection()
+
 try:
     user_id = st.session_state.user_id
     query = """
