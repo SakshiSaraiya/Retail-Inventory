@@ -81,7 +81,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Branding with Logo ---
-st.image("https://i.imgur.com/tKTds1L.png", width=180)  # Retail Pulse logo (upload your own if needed)
 st.markdown("<h1>Retail Pulse</h1>", unsafe_allow_html=True)
 st.markdown("<div class='subheading'>Insightful Retail. Smarter Decisions.</div>", unsafe_allow_html=True)
 
