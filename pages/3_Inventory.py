@@ -1,210 +1,562 @@
 import streamlit as st  
 import pandas as pd
 import plotly.express as px
-from db import get_connection
+import plotly.graph_objects as go
+from db import get_connection, execute_query
 from auth import check_login
 
 # -------------------------
-# Authentication Check
+# Page Config and Authentication
 # -------------------------
+st.set_page_config(
+    page_title="📦 Inventory Management | RetailPro",
+    page_icon="📦",
+    layout="wide"
+)
+
 check_login()
 user_id = st.session_state.user_id
 
-st.set_page_config(page_title="Inventory", layout="wide")
-
 # -------------------------
-# Custom Styling
+# Professional Styling
 # -------------------------
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        background-color: #1E293B;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    .stApp {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Inter', sans-serif;
     }
-    [data-testid="stSidebar"] * {
-        color: #E2E8F0 !important;
-        font-size: 0.95rem;
+    
+    .main-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .metric-card {
-        background-color: #1E293B;
-        color: #FFFFFF;
-        padding: 0.7rem 1rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    
+    .page-header {
         text-align: center;
+        padding: 2rem 0;
+        border-bottom: 1px solid #e1e8ed;
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: #64748b;
+        font-weight: 400;
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+    
+    .metric-icon {
+        font-size: 2.5rem;
         margin-bottom: 1rem;
-        min-height: 90px;
+        display: block;
     }
-    .metric-card h4 {
-        font-size: 1.05rem;
-        margin-bottom: 0.25rem;
-        color: #CBD5E1;
-    }
-    .metric-card h2 {
-        font-size: 1.9rem;
-        margin: 0;
+    
+    .metric-value {
+        font-size: 2.2rem;
         font-weight: 700;
-        color: #FACC15;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
     }
-    .dataframe tbody td {
+    
+    .metric-label {
         font-size: 0.95rem;
-        color: #1F2937;
+        color: #64748b;
+        font-weight: 500;
     }
-    .dataframe thead th {
-        background-color: #CBD5E1;
-        font-weight: bold;
-        color: #1E293B;
-        font-size: 0.95rem;
+    
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 2rem 0 1rem 0;
+        position: relative;
+        padding-left: 1rem;
     }
+    
+    .section-title::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+    }
+    
+    .form-container {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f1f5f9;
+        margin: 1.5rem 0;
+    }
+    
+    .form-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .alert-card {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border: 1px solid #f87171;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .alert-title {
+        font-weight: 600;
+        color: #dc2626;
+        margin-bottom: 0.5rem;
+    }
+    
+    .alert-content {
+        color: #b91c1c;
+        font-size: 0.9rem;
+    }
+    
+    .warning-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #f59e0b;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .warning-title {
+        font-weight: 600;
+        color: #92400e;
+        margin-bottom: 0.5rem;
+    }
+    
+    .warning-content {
+        color: #b45309;
+        font-size: 0.9rem;
+    }
+    
+    .success-card {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border: 1px solid #10b981;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .success-title {
+        font-weight: 600;
+        color: #065f46;
+        margin-bottom: 0.5rem;
+    }
+    
+    .success-content {
+        color: #047857;
+        font-size: 0.9rem;
+    }
+    
+    .data-container {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f1f5f9;
+        margin: 1.5rem 0;
+    }
+    
+    .data-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stSelectbox > div > div {
+        border-radius: 12px !important;
+        border: 2px solid #e2e8f0 !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stTextInput > div > div > input:focus,
+    .stNumberInput > div > div > input:focus,
+    .stSelectbox > div > div:focus-within {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    }
+    
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 1rem 2rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    .stDataFrame {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
+    
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h2 style='margin-bottom: 1rem;'>Inventory Overview</h2>", unsafe_allow_html=True)
+# -------------------------
+# Data Functions
+# -------------------------
+@st.cache_data(ttl=300)
+def fetch_inventory_data(user_id):
+    conn = get_connection()
+    if not conn:
+        return None, None, None, None
+    
+    # Get products with current stock
+    products_df = pd.read_sql("""
+        SELECT product_id, name, category, cost_price, selling_price, 
+               stock_quantity, reorder_level, description
+        FROM Products 
+        WHERE user_id = %s
+        ORDER BY name
+    """, conn, params=(user_id,))
+    
+    # Calculate metrics
+    total_products = len(products_df)
+    total_value = (products_df['stock_quantity'] * products_df['cost_price']).sum() if not products_df.empty else 0
+    low_stock_count = len(products_df[products_df['stock_quantity'] <= products_df['reorder_level']]) if not products_df.empty else 0
+    out_of_stock_count = len(products_df[products_df['stock_quantity'] == 0]) if not products_df.empty else 0
+    
+    conn.close()
+    
+    return products_df, total_products, total_value, low_stock_count, out_of_stock_count
+
+def add_product(user_id, name, category, cost_price, selling_price, stock_quantity, reorder_level, description):
+    query = """
+        INSERT INTO Products (user_id, name, category, cost_price, selling_price, 
+                            stock_quantity, reorder_level, description)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    return execute_query(query, (user_id, name, category, cost_price, selling_price, 
+                                stock_quantity, reorder_level, description))
+
+def update_stock(product_id, new_quantity):
+    query = "UPDATE Products SET stock_quantity = %s WHERE product_id = %s"
+    return execute_query(query, (new_quantity, product_id))
 
 # -------------------------
-# Load data
+# Main Content
 # -------------------------
-conn = get_connection()
+st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
-try:
-    purchases = pd.read_sql("SELECT product_id, quantity_purchased, cost_price FROM Purchases", conn)
-    sales = pd.read_sql("SELECT product_id, quantity_sold, selling_price FROM Sales", conn)
-    products = pd.read_sql("SELECT Name, category, product_id, stock, cost_price, selling_price FROM Products", conn)
-except Exception as e:
-    st.error(f"❌ Error loading data: {e}")
-    st.stop()
+# Header
+st.markdown("""
+    <div class="page-header">
+        <h1 class="page-title">📦 Inventory Management</h1>
+        <p class="page-subtitle">Monitor stock levels, add products, and manage your inventory efficiently</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# -------------------------
-# Preprocessing
-# -------------------------
-purchases['product_id'] = purchases['product_id'].astype(str).str.strip().str.upper()
-sales['product_id'] = sales['product_id'].astype(str).str.strip().str.upper()
-products['product_id'] = products['product_id'].astype(str).str.strip().str.upper()
+# Fetch inventory data
+products_df, total_products, total_value, low_stock_count, out_of_stock_count = fetch_inventory_data(user_id)
 
-# Aggregate data
-purchase_agg = purchases.groupby('product_id').agg({'quantity_purchased': 'sum'}).reset_index()
-sales_agg = sales.groupby('product_id').agg({'quantity_sold': 'sum'}).reset_index()
-
-# Merge all data
-inventory_df = products.merge(purchase_agg, on='product_id', how='left')
-inventory_df = inventory_df.merge(sales_agg, on='product_id', how='left')
-
-# Fill NaNs
-inventory_df['quantity_purchased'] = inventory_df['quantity_purchased'].fillna(0)
-inventory_df['quantity_sold'] = inventory_df['quantity_sold'].fillna(0)
-
-# Live stock = product stock + quantity_purchased - quantity_sold
-inventory_df['live_stock'] = inventory_df['stock'] + inventory_df['quantity_purchased'] - inventory_df['quantity_sold']
-inventory_df['stock_value'] = inventory_df['live_stock'] * inventory_df['cost_price']
-inventory_df['potential_revenue'] = inventory_df['live_stock'] * inventory_df['selling_price']
-inventory_df['profit_margin'] = inventory_df['selling_price'] - inventory_df['cost_price']
-inventory_df['total_profit'] = inventory_df['profit_margin'] * inventory_df['live_stock']
-
-inventory_df.rename(columns={'Name': 'name', 'category': 'Category'}, inplace=True)
-
-# -------------------------
-# Sidebar Filters
-# -------------------------
-st.sidebar.header("Filter Inventory")
-categories = inventory_df['Category'].dropna().unique()
-selected_category = st.sidebar.multiselect("Category", categories, default=list(categories))
-search_term = st.sidebar.text_input("Search Product")
-
-filtered = inventory_df[inventory_df['Category'].isin(selected_category)]
-if search_term:
-    filtered = filtered[filtered['name'].str.contains(search_term, case=False)]
-
-# -------------------------
-# Key Metrics
-# -------------------------
-st.markdown("<h4 style='margin-top:2rem;'>Key Metrics</h4>", unsafe_allow_html=True)
-k1, k2, k3, k4 = st.columns(4)
-
-with k1:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Total Live Stock</h4>
-            <h2>{int(filtered['live_stock'].sum())}</h2>
+if products_df is not None:
+    # Key Metrics
+    st.markdown("""
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span class="metric-icon">📦</span>
+                <div class="metric-value">{}</div>
+                <div class="metric-label">Total Products</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-icon">💵</span>
+                <div class="metric-value">₹{:,.0f}</div>
+                <div class="metric-label">Inventory Value</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-icon">⚠️</span>
+                <div class="metric-value">{}</div>
+                <div class="metric-label">Low Stock Items</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-icon">🚫</span>
+                <div class="metric-value">{}</div>
+                <div class="metric-label">Out of Stock</div>
+            </div>
         </div>
-    """, unsafe_allow_html=True)
+    """.format(total_products, total_value, low_stock_count, out_of_stock_count), unsafe_allow_html=True)
+    
+    # Alerts
+    if out_of_stock_count > 0:
+        st.markdown(f"""
+            <div class="alert-card">
+                <div class="alert-title">🚫 Critical Alert</div>
+                <div class="alert-content">{out_of_stock_count} products are completely out of stock!</div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    if low_stock_count > 0:
+        st.markdown(f"""
+            <div class="warning-card">
+                <div class="warning-title">⚠️ Stock Warning</div>
+                <div class="warning-content">{low_stock_count} products are running low on stock.</div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # Tabs for different actions
+    tab1, tab2, tab3 = st.tabs(["📊 View Inventory", "➕ Add Product", "🔄 Update Stock"])
+    
+    with tab1:
+        st.markdown('<h2 class="section-title">📊 Current Inventory</h2>', unsafe_allow_html=True)
+        
+        if not products_df.empty:
+            # Add search and filter options
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                search_term = st.text_input("🔍 Search products", placeholder="Enter product name or category...")
+            with col2:
+                category_filter = st.selectbox("Filter by Category", 
+                                             ["All Categories"] + list(products_df['category'].unique()) if 'category' in products_df.columns else ["All Categories"])
+            
+            # Filter data
+            filtered_df = products_df.copy()
+            if search_term:
+                filtered_df = filtered_df[filtered_df['name'].str.contains(search_term, case=False, na=False)]
+            if category_filter != "All Categories":
+                filtered_df = filtered_df[filtered_df['category'] == category_filter]
+            
+            # Display inventory table
+            st.markdown('<div class="data-container">', unsafe_allow_html=True)
+            st.markdown('<h3 class="data-title">Product Inventory</h3>', unsafe_allow_html=True)
+            
+            if not filtered_df.empty:
+                # Format for display
+                display_df = filtered_df.copy()
+                display_df['Cost Price'] = display_df['cost_price'].apply(lambda x: f"₹{x:,.2f}")
+                display_df['Selling Price'] = display_df['selling_price'].apply(lambda x: f"₹{x:,.2f}")
+                display_df['Stock Value'] = (display_df['stock_quantity'] * display_df['cost_price']).apply(lambda x: f"₹{x:,.2f}")
+                
+                # Add status column
+                def get_status(row):
+                    if row['stock_quantity'] == 0:
+                        return "🚫 Out of Stock"
+                    elif row['stock_quantity'] <= row['reorder_level']:
+                        return "⚠️ Low Stock"
+                    else:
+                        return "✅ In Stock"
+                
+                display_df['Status'] = display_df.apply(get_status, axis=1)
+                
+                # Select columns to display
+                display_columns = ['name', 'category', 'stock_quantity', 'reorder_level', 
+                                 'Cost Price', 'Selling Price', 'Stock Value', 'Status']
+                final_df = display_df[display_columns]
+                final_df.columns = ['Product Name', 'Category', 'Current Stock', 'Reorder Level', 
+                                  'Cost Price', 'Selling Price', 'Stock Value', 'Status']
+                
+                st.dataframe(final_df, use_container_width=True, hide_index=True)
+                
+                # Stock level visualization
+                if len(filtered_df) <= 20:  # Only show chart for reasonable number of products
+                    st.markdown('<h3 class="data-title">Stock Levels Visualization</h3>', unsafe_allow_html=True)
+                    
+                    fig = px.bar(
+                        filtered_df, 
+                        x='name', 
+                        y='stock_quantity',
+                        color='stock_quantity',
+                        color_continuous_scale='RdYlGn',
+                        title="",
+                        labels={'stock_quantity': 'Stock Quantity', 'name': 'Product'}
+                    )
+                    fig.update_layout(
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        font_family="Inter",
+                        xaxis_tickangle=-45,
+                        margin=dict(l=0, r=0, t=0, b=0),
+                        coloraxis_showscale=False
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("No products found matching your search criteria.")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No products in inventory. Add your first product using the 'Add Product' tab.")
+    
+    with tab2:
+        st.markdown('<h2 class="section-title">➕ Add New Product</h2>', unsafe_allow_html=True)
+        
+        st.markdown('<div class="form-container">', unsafe_allow_html=True)
+        st.markdown('<h3 class="form-title">Product Information</h3>', unsafe_allow_html=True)
+        
+        with st.form("add_product_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                name = st.text_input("Product Name*", placeholder="Enter product name")
+                category = st.text_input("Category*", placeholder="e.g., Electronics, Clothing")
+                cost_price = st.number_input("Cost Price (₹)*", min_value=0.0, step=0.01, format="%.2f")
+                selling_price = st.number_input("Selling Price (₹)*", min_value=0.0, step=0.01, format="%.2f")
+            
+            with col2:
+                stock_quantity = st.number_input("Initial Stock Quantity*", min_value=0, step=1)
+                reorder_level = st.number_input("Reorder Level*", min_value=0, step=1, 
+                                               help="Stock level at which you want to be alerted")
+                description = st.text_area("Description", placeholder="Enter product description (optional)")
+            
+            submit_button = st.form_submit_button("🛍️ Add Product", use_container_width=True)
+            
+            if submit_button:
+                if name and category and cost_price >= 0 and selling_price >= 0:
+                    success = add_product(user_id, name, category, cost_price, selling_price, 
+                                        stock_quantity, reorder_level, description)
+                    if success:
+                        st.markdown("""
+                            <div class="success-card">
+                                <div class="success-title">✅ Success!</div>
+                                <div class="success-content">Product added successfully to inventory.</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to add product. Please try again.")
+                else:
+                    st.warning("⚠️ Please fill in all required fields.")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab3:
+        st.markdown('<h2 class="section-title">🔄 Update Stock Quantities</h2>', unsafe_allow_html=True)
+        
+        if not products_df.empty:
+            st.markdown('<div class="form-container">', unsafe_allow_html=True)
+            st.markdown('<h3 class="form-title">Stock Management</h3>', unsafe_allow_html=True)
+            
+            # Select product
+            product_names = dict(zip(products_df['name'], products_df['product_id']))
+            selected_product_name = st.selectbox("Select Product", list(product_names.keys()))
+            
+            if selected_product_name:
+                selected_product_id = product_names[selected_product_name]
+                current_stock = products_df[products_df['product_id'] == selected_product_id]['stock_quantity'].iloc[0]
+                reorder_level = products_df[products_df['product_id'] == selected_product_id]['reorder_level'].iloc[0]
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.info(f"Current Stock: **{current_stock}** units")
+                with col2:
+                    st.info(f"Reorder Level: **{reorder_level}** units")
+                
+                # Update stock
+                with st.form("update_stock_form"):
+                    new_quantity = st.number_input("New Stock Quantity", 
+                                                 min_value=0, 
+                                                 value=int(current_stock), 
+                                                 step=1)
+                    
+                    reason = st.selectbox("Reason for Update", 
+                                        ["Stock Adjustment", "New Purchase", "Stock Return", "Damage/Loss", "Other"])
+                    
+                    update_button = st.form_submit_button("🔄 Update Stock", use_container_width=True)
+                    
+                    if update_button:
+                        success = update_stock(selected_product_id, new_quantity)
+                        if success:
+                            st.markdown("""
+                                <div class="success-card">
+                                    <div class="success-title">✅ Stock Updated!</div>
+                                    <div class="success-content">Stock quantity updated successfully.</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+                            st.rerun()
+                        else:
+                            st.error("❌ Failed to update stock. Please try again.")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No products available. Add products first to manage stock.")
 
-with k2:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Stock Value</h4>
-            <h2>₹ {filtered['stock_value'].sum():,.2f}</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
-with k3:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Revenue Potential</h4>
-            <h2>₹ {filtered['potential_revenue'].sum():,.2f}</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
-with k4:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Avg. Margin</h4>
-            <h2>₹ {filtered['profit_margin'].mean():.2f}</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
-# -------------------------
-# Product Table
-# -------------------------
-st.markdown("### 📋 Product List (Live Stock)")
-st.dataframe(filtered[['product_id', 'name', 'Category', 'cost_price', 'selling_price', 'live_stock', 'stock_value']], use_container_width=True)
-
-# -------------------------
-# Low Stock Alerts
-# -------------------------
-low_stock = filtered[filtered['live_stock'] < 10]
-if not low_stock.empty:
-    st.markdown("### ⚠️ Low Stock Alerts")
-    st.markdown(f"""
-        <div style='background-color:#F87171;padding:10px;border-radius:5px;color:white;font-weight:600;'>
-            ⚠️ {low_stock.shape[0]} product(s) are low on stock
-        </div>
-    """, unsafe_allow_html=True)
-    st.dataframe(low_stock[['product_id', 'name', 'Category', 'live_stock']], use_container_width=True)
 else:
-    st.success("✅ All filtered products are well stocked.")
+    st.error("❌ Unable to fetch inventory data. Please check your database connection.")
 
-# -------------------------
-# Visualizations
-# -------------------------
-st.markdown("---")
-col1, col2 = st.columns(2)
-
-with col1:
-    category_value = filtered.groupby('Category')['stock_value'].sum().reset_index()
-    fig1 = px.pie(category_value, names='Category', values='stock_value',
-                 title="Inventory Value by Category", hole=0.45,
-                 color_discrete_sequence=px.colors.sequential.RdBu)
-    fig1.update_layout(showlegend=True, plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
-    st.plotly_chart(fig1, use_container_width=True)
-
-with col2:
-    top_profit = filtered.sort_values(by='total_profit', ascending=False).head(10)
-    fig2 = px.bar(top_profit, x='name', y='total_profit', color='profit_margin',
-                 title="Top Products by Profit Potential",
-                 color_continuous_scale='viridis')
-    fig2.update_layout(xaxis_title="Product", yaxis_title="Profit", showlegend=False)
-    st.plotly_chart(fig2, use_container_width=True)
-
-# -------------------------
-# Top Products by Stock
-# -------------------------
-st.markdown("---")
-top_stock = st.slider("Top N Products by Stock", 5, 20, 10)
-stock_bar = px.bar(
-    filtered.sort_values(by='live_stock', ascending=False).head(top_stock),
-    x='name', y='live_stock',
-    title=f"Top {top_stock} Products by Live Stock",
-    color='live_stock',
-    color_continuous_scale='sunsetdark'
-)
-stock_bar.update_layout(xaxis_title="Product", yaxis_title="Live Stock", showlegend=False)
-st.plotly_chart(stock_bar, use_container_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
