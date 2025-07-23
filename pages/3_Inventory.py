@@ -12,18 +12,21 @@ user_id = st.session_state.user_id
 
 st.set_page_config(page_title="Inventory", layout="wide")
 
+st.markdown("""
+    <style>
+    [data-testid="stSidebar"] {
+        background-color: #0F172A !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 # -------------------------
 # Custom Styling
 # -------------------------
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        background-color: #1E293B;
-    }
-    [data-testid="stSidebar"] * {
-        color: #E2E8F0 !important;
-        font-size: 0.95rem;
-    }
     .metric-card {
         background-color: #1E293B;
         color: #FFFFFF;
@@ -82,6 +85,8 @@ st.markdown("""
         min-width: 180px;
         min-height: 90px;
         margin-bottom: 1.5rem;
+        position: relative;
+        top: -40px;
     }
     .kpi-card-light .kpi-label {
         font-size: 1.1rem;
@@ -92,7 +97,7 @@ st.markdown("""
     .kpi-card-light .kpi-value {
         font-size: 2rem;
         font-weight: 800;
-        color: #f59e42;
+        color: #000;
     }
     .kpi-section-title {
         font-size: 1.25rem;
@@ -104,7 +109,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h2 style='margin-bottom: 1rem;'>Inventory Overview</h2>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-40px;'>Inventory Overview</h2>", unsafe_allow_html=True)
 
 # -------------------------
 # Load data
@@ -198,7 +203,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # -------------------------
 # Product Table
 # -------------------------
-st.markdown("### 📋 Product List (Live Stock)")
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Product List (Live Stock)</div>", unsafe_allow_html=True)
 st.dataframe(filtered[['product_id', 'name', 'Category', 'cost_price', 'selling_price', 'live_stock', 'stock_value']], use_container_width=True)
 
 # -------------------------
@@ -252,17 +257,14 @@ if 'sale_date' in sales.columns:
     slow_sales = products.merge(slow_sales, on='product_id', how='left')
     slow_sales['quantity_sold'] = slow_sales['quantity_sold'].fillna(0)
     slowest = slow_sales.sort_values(by='quantity_sold').head(10)
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-header">🐢 Slow Moving Products (Last 30 Days)</div>', unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Slow Moving Products (Last 30 Days)</div>", unsafe_allow_html=True)
     st.dataframe(slowest[["product_id", "Name", "category", "quantity_sold"]], use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------
 # Download Inventory Report
 # -------------------------
 import io
 csv = filtered.to_csv(index=False).encode('utf-8')
-st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.download_button('Download Inventory Report (CSV)', csv, 'inventory_report.csv', 'text/csv')
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -274,18 +276,15 @@ if 'order_date' in purchases.columns:
     product_first_purchase = purchases.groupby('product_id')['order_date'].min().reset_index()
     inventory_age = products.merge(product_first_purchase, on='product_id', how='left')
     inventory_age['days_in_stock'] = (pd.Timestamp.now() - inventory_age['order_date']).dt.days
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-header">⏳ Inventory Age Analysis</div>', unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Inventory Age Analysis</div>", unsafe_allow_html=True)
     st.dataframe(inventory_age[["product_id", "Name", "category", "days_in_stock"]], use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------
 # Low Stock Alerts with Reorder Action
 # -------------------------
 low_stock = filtered[filtered['live_stock'] < 10]
 if not low_stock.empty:
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-header">⚠️ Low Stock Alerts</div>', unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Low Stock Alerts</div>", unsafe_allow_html=True)
     st.markdown(f"""
         <div style='background-color:#F87171;padding:10px;border-radius:5px;color:white;font-weight:600;margin-bottom:1rem;'>
             ⚠️ {low_stock.shape[0]} product(s) are low on stock
@@ -323,7 +322,8 @@ with col2:
 # Top Products by Stock
 # -------------------------
 st.markdown("---")
-top_stock = st.slider("Top N Products by Stock", 5, 20, 10)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Top N Products by Stock</div>", unsafe_allow_html=True)
+top_stock = st.slider("", 5, 20, 10)
 stock_bar = px.bar(
     filtered.sort_values(by='live_stock', ascending=False).head(top_stock),
     x='name', y='live_stock',

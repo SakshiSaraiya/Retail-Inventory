@@ -69,44 +69,21 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- Custom CSS for dark sidebar/light main ---
+st.markdown("""
+    <style>
+    [data-testid="stSidebar"] {
+        background-color: #0F172A !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- GLOBAL STYLES FOR ZOHO-LIKE LOOK ---
 st.markdown("""
     <style>
-    /* Sidebar styling */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(135deg, #1e293b 90%, #22304a 100%);
-        min-width: 16rem;
-        max-width: 16rem;
-        padding-top: 1.2rem;
-        box-shadow: 2px 0 16px rgba(30,41,59,0.07);
-    }
-    [data-testid="stSidebar"] * {
-        font-family: 'Segoe UI', 'Roboto', sans-serif;
-        color: #E2E8F0 !important;
-        font-size: 1rem !important;
-    }
-    .sidebar-menu {
-        margin-bottom: 2.5rem;
-    }
-    .sidebar-menu-item {
-        display: flex;
-        align-items: center;
-        gap: 0.9rem;
-        padding: 0.7rem 1.2rem;
-        border-radius: 10px;
-        margin-bottom: 0.3rem;
-        cursor: pointer;
-        transition: background 0.18s;
-        font-weight: 600;
-    }
-    .sidebar-menu-item.active, .sidebar-menu-item:hover {
-        background: #2563eb33;
-        color: #fff !important;
-    }
-    .sidebar-menu-item .icon {
-        font-size: 1.25rem;
-        margin-right: 0.2rem;
-    }
     /* Main background */
     .main-bg {
         background: #f8fafc;
@@ -139,7 +116,7 @@ st.markdown("""
     .kpi-value {
         font-size: 2rem;
         font-weight: 800;
-        color: #f59e42;
+        color: #000;
     }
     .section-title {
         font-size: 1.25rem;
@@ -167,7 +144,7 @@ st.markdown("""
 # --- MAIN CONTENT WRAPPER ---
 
 # --- PAGE TITLE ---
-st.markdown("<div class='section-title'>Purchase Overview</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-60px;'>Purchase Overview</div>", unsafe_allow_html=True)
 
 # -------------------------
 # Connect to SQL
@@ -206,7 +183,7 @@ st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 # --- Raw Data Table with Edit/Delete (toggle) ---
 show_raw = st.checkbox("Show Raw Data Table (Edit/Delete)")
 if show_raw:
-    st.markdown("<h4 style='margin-top:2.5rem;'>Purchase Records</h4>", unsafe_allow_html=True)
+    st.markdown("<h1 style='font-size:2.0rem;color:#0F172A;font-weight:00;position:relative:top:-40px;'>Purchase Records</h4>", unsafe_allow_html=True)
     raw_df = purchases.copy()
     st.dataframe(raw_df, use_container_width=True)
     st.markdown("<b>Edit or Delete a Purchase Record:</b>", unsafe_allow_html=True)
@@ -250,96 +227,22 @@ if show_raw:
 # Sidebar Filters
 # -------------------------
 st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {
-        background: linear-gradient(135deg, #1e293b 90%, #22304a 100%);
-        min-width: 16rem;
-        max-width: 16rem;
-        padding-top: 1.2rem;
-        box-shadow: 2px 0 16px rgba(30,41,59,0.07);
+<style>
+   [data-testid="stSidebar"] {
+        background-color: #0F172A !important;
     }
     [data-testid="stSidebar"] * {
-        font-family: 'Segoe UI', 'Roboto', sans-serif;
-        color: #E2E8F0 !important;
-        font-size: 1rem !important;
+        color: white !important;
     }
-    .sidebar-filter-header {
-        font-size: 1.08rem;
-        font-weight: 800;
-        color: #F1F5F9;
-        margin-bottom: 0.7rem;
-        letter-spacing: 0.5px;
-    }
-    .sidebar-divider {
-        border: none;
-        border-top: 1.5px solid #334155;
-        margin: 0.7rem 0 1.2rem 0;
-    }
-    .sidebar-widget {
-        background: linear-gradient(135deg, #22304a 80%, #2d3c54 100%);
-        border-radius: 16px;
-        padding: 1.1rem 1rem 0.8rem 1rem;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 4px 16px rgba(30,41,59,0.10);
-        border: 1.5px solid #334155;
-        transition: box-shadow 0.2s, border 0.2s;
-    }
-    .sidebar-widget:hover {
-        box-shadow: 0 6px 24px rgba(96,165,250,0.13);
-        border: 1.5px solid #60A5FA;
-    }
-    .sidebar-widget label {
-        color: #F1F5F9 !important;
-        font-weight: 700;
-        font-size: 1rem;
-        margin-bottom: 0.3rem;
-        display: block;
-    }
-    .sidebar-widget input,
-    .sidebar-widget select,
-    .sidebar-widget .stMultiSelect,
-    .sidebar-widget .stDateInput,
-    .sidebar-widget .stTextInput,
-    .sidebar-widget .stNumberInput {
-        border-radius: 10px !important;
-        background: #f8fafc !important;
-        color: #1E293B !important;
-        border: 1.5px solid #cbd5e1 !important;
-        margin-bottom: 0.2rem;
-        font-size: 1rem !important;
-    }
-    /* MAXIMUM SPECIFICITY for date input */
-    [data-testid="stSidebar"] input[type="date"],
-    [data-testid="stSidebar"] .stDateInput input {
-        color: #000 !important;
-        background: #f8fafc !important;
-        font-size: 1rem !important;
-    }
-    .sidebar-widget input::placeholder {
-        color: #334155 !important;
-        opacity: 1 !important;
-    }
-    </style>
+</style>
 """, unsafe_allow_html=True)
 
 # --- Sidebar Filters ---
-st.sidebar.markdown("<div class='sidebar-filter-header'>Filter Purchases</div>", unsafe_allow_html=True)
-st.sidebar.markdown("<hr class='sidebar-divider'>", unsafe_allow_html=True)
-with st.sidebar:
-    with st.container():
-        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
-        product_filter = st.multiselect("Product ID", purchases['product_id'].dropna().unique(), default=purchases['product_id'].unique(), key="product_filter")
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
-        vendor_filter = st.multiselect("Vendor", purchases['vendor_name'].dropna().unique(), default=purchases['vendor_name'].unique(), key="vendor_filter")
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
-        status_filter = st.multiselect("Payment Status", purchases['payment_status'].dropna().unique(), default=purchases['payment_status'].unique(), key="status_filter")
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
-        start_date = st.date_input("Start Date", purchases['order_date'].min(), key="start_date")
-        end_date = st.date_input("End Date", purchases['order_date'].max(), key="end_date")
-        st.markdown("</div>", unsafe_allow_html=True)
+product_filter = st.sidebar.multiselect("Product ID", purchases['product_id'].dropna().unique(), default=purchases['product_id'].unique(), key="product_filter")
+vendor_filter = st.sidebar.multiselect("Vendor", purchases['vendor_name'].dropna().unique(), default=purchases['vendor_name'].unique(), key="vendor_filter")
+status_filter = st.sidebar.multiselect("Payment Status", purchases['payment_status'].dropna().unique(), default=purchases['payment_status'].unique(), key="status_filter")
+start_date = st.sidebar.date_input("Start Date", purchases['order_date'].min(), key="start_date")
+end_date = st.sidebar.date_input("End Date", purchases['order_date'].max(), key="end_date")
 
 filtered = purchases[
     (purchases['product_id'].isin(product_filter)) &
@@ -352,16 +255,15 @@ filtered = purchases[
 # -------------------------
 # Display Filtered Table
 # -------------------------
-# Remove the filtered purchase records table below the KPIs
-# (Delete or comment out the following lines:)
-# st.markdown("<h4 style='margin-top:2rem;'>Purchase Records</h4>", unsafe_allow_html=True)
-# st.dataframe(filtered, use_container_width=True)
+if show_raw:
+    st.markdown("<h4 style='margin-top:2rem;'>Purchase Records</h4>", unsafe_allow_html=True)
+    st.dataframe(filtered, use_container_width=True)
 
 # ---------- Payment Alerts ----------
-st.markdown("<div class='section-title'>Payment Alerts</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:600;position:relative:top:-40px;'>Payment Alerts</div>", unsafe_allow_html=True)
 today = pd.to_datetime("today")
-pending = filtered[(filtered['payment_status'].str.lower() == "pending") & (filtered['payment_due'] >= today)]
-overdue = filtered[(filtered['payment_status'].str.lower() == "pending") & (filtered['payment_due'] < today)]
+pending = purchases[(purchases['payment_status'].str.lower() == "pending") & (purchases['payment_due'] >= today)]
+overdue = purchases[(purchases['payment_status'].str.lower() == "pending") & (purchases['payment_due'] < today)]
 
 col1, col2 = st.columns(2)
 
@@ -387,12 +289,12 @@ with col2:
 # Visualizations (Updated Layout & Color)
 # -------------------------
 st.markdown("---")
-
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:600;position:relative:top:-40px;'>Insightful Visualisations</div>", unsafe_allow_html=True)
 # Donut Chart for Vendors
 col1, col2 = st.columns(2)
 
 with col1:
-    vendor_summary = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
+    vendor_summary = purchases.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
     fig_donut = px.pie(
         vendor_summary,
         names='vendor_name',
@@ -411,7 +313,7 @@ with col1:
 
 # Top Products Chart
 with col2:
-    product_summary = filtered.groupby('product_id')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
+    product_summary = purchases.groupby('product_id')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
     fig_product = px.bar(
         product_summary,
         x='product_id',
@@ -428,7 +330,7 @@ with col2:
     st.plotly_chart(fig_product, use_container_width=True)
 
 # Monthly Trend
-monthly_summary = filtered.groupby(filtered['order_date'].dt.to_period('M').astype(str))['quantity_purchased'].sum().reset_index()
+monthly_summary = purchases.groupby(purchases['order_date'].dt.to_period('M').astype(str))['quantity_purchased'].sum().reset_index()
 fig_monthly = px.area(
     monthly_summary,
     x='order_date',

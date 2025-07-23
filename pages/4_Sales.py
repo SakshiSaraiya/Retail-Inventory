@@ -108,7 +108,7 @@ st.markdown("""
     flex-wrap: wrap;
 }
 .quick-insight-card {
-    background: #f8fafc;
+    background: #eaf1fb;
     border-radius: 14px;
     box-shadow: 0 2px 8px rgba(30,41,59,0.06);
     padding: 1.1rem 1.5rem;
@@ -118,6 +118,8 @@ st.markdown("""
     align-items: center;
     gap: 0.7rem;
     min-width: 220px;
+    position: relative;
+    top: -70px;
 }
 .quick-insight-card .icon {
     font-size: 1.5rem;
@@ -138,6 +140,8 @@ st.markdown("""
     min-width: 180px;
     min-height: 90px;
     margin-bottom: 1.5rem;
+    position: relative;
+    top: -60px;
 }
 .kpi-card-light .kpi-label {
     font-size: 1.1rem;
@@ -148,12 +152,12 @@ st.markdown("""
 .kpi-card-light .kpi-value {
     font-size: 2rem;
     font-weight: 800;
-    color: #f59e42;
+    color: #000;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""<h2 style='margin-bottom:1rem;'>📈 Sales Overview</h2>""", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-40px;'>Sales Overview</h2>", unsafe_allow_html=True)
 
 conn = get_connection()
 
@@ -306,34 +310,36 @@ else:
     # ----------------------
     # Sales Transactions Table (only if raw data is not shown)
 # ----------------------
-st.markdown("### 📋 Sales Transactions")
-if filtered_sales.empty:
-    st.warning("⚠️ No matching sales records found with current filters.")
-else:
-    st.dataframe(
-        filtered_sales[['sale_id', 'sales_date', 'Name', 'quantity_sold', 'revenue', 'profit', 'shipped', 'payment_received']],
-        use_container_width=True
-    )
+    st.markdown("### 📋 Sales Transactions")
+    if filtered_sales.empty:
+        st.warning("⚠️ No matching sales records found with current filters.")
+    else:
+        st.dataframe(
+            filtered_sales[['sale_id', 'sales_date', 'Name', 'quantity_sold', 'revenue', 'profit', 'shipped', 'payment_received']],
+            use_container_width=True
+        )
 
 # ----------------------
 # Sales by Product (Donut/Pie Chart + Ranked Table)
 # ----------------------
 st.markdown("---")
 st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-st.markdown("<div class='section-header'>🥇 Product Sales Share</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Product Sales Share</div>", unsafe_allow_html=True)
 trend_products = st.multiselect("Select Products for Chart", filtered_sales['Name'].unique(), default=list(filtered_sales['Name'].unique())[:3], key="trend_products")
 trend_df = filtered_sales[filtered_sales['Name'].isin(trend_products)]
 if not trend_df.empty:
     pie_df = trend_df.groupby('Name')['quantity_sold'].sum().reset_index().sort_values(by='quantity_sold', ascending=False)
     top_pie = pie_df.iloc[0]['Name'] if not pie_df.empty else None
     st.markdown(f"<div style='font-size:1.08rem;color:#2563eb;margin-bottom:0.7rem;'>Top seller: <b>{top_pie}</b> ({int(pie_df.iloc[0]['quantity_sold'])} sold)</div>", unsafe_allow_html=True)
-    fig_pie = px.pie(pie_df, names='Name', values='quantity_sold', hole=0.45, color_discrete_sequence=px.colors.sequential.Blues, title="")
+    fig_pie = px.pie(pie_df, names='Name', values='quantity_sold', hole=0.45, color_discrete_sequence=[
+        "#A3C4F3", "#FFB7B2", "#B5EAD7", "#FFDAC1", "#E2F0CB",
+        "#C7CEEA", "#FFFACD", "#FFD6E0", "#D4A5A5", "#B5B2C2"], title="")
     fig_pie.update_traces(textinfo='percent+label')
     fig_pie.update_layout(showlegend=True, template='plotly_white')
     st.plotly_chart(fig_pie, use_container_width=True)
     # Ranked table with color-coded sales
-    styled_table = pie_df.style.background_gradient(cmap='Blues', subset=['quantity_sold'])
-    st.markdown('<div style="margin-top:1.2rem;font-weight:600;">Ranked Product Sales</div>', unsafe_allow_html=True)
+    styled_table = pie_df.style
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Ranked Product Sales</div>", unsafe_allow_html=True)
     st.dataframe(styled_table, use_container_width=True)
 else:
     st.info("No data for selected products.")
@@ -343,10 +349,10 @@ st.markdown("</div>", unsafe_allow_html=True)
 # Profitability by Category
 # ----------------------
 st.markdown("---")
-st.markdown("### 💸 Profitability by Category")
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Profitability by Category</div>", unsafe_allow_html=True)
 if 'category' in filtered_sales.columns:
     cat_profit = filtered_sales.groupby('category')['profit'].sum().reset_index()
-    fig_cat = px.bar(cat_profit, x='category', y='profit', color='profit', color_continuous_scale='Oranges', title="Profit by Category")
+    fig_cat = px.bar(cat_profit, x='category', y='profit', color='profit', color_continuous_scale='peach', title="Profit by Category")
     fig_cat.update_layout(xaxis_title="Category", yaxis_title="Profit", template='plotly_white')
     st.plotly_chart(fig_cat, use_container_width=True)
 else:
@@ -356,7 +362,7 @@ else:
 # Top Selling Products
 # ----------------------
 st.markdown("---")
-st.markdown("### 🏆 Top-Selling Products")
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Top-Selling Products</div>", unsafe_allow_html=True)
 top_n = st.slider("Top N Products", 5, 20, 10)
 top_products = filtered_sales.groupby('Name')[['quantity_sold', 'revenue', 'profit']].sum().reset_index()
 top_products = top_products.sort_values(by='quantity_sold', ascending=False).head(top_n)
@@ -374,7 +380,7 @@ with col2:
 # Monthly Trends
 # ----------------------
 st.markdown("---")
-st.markdown("### 📊 Monthly Trends")
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Monthly Trends</div>", unsafe_allow_html=True)
 sales['month'] = sales['sales_date'].dt.to_period('M').astype(str)
 monthly = sales.groupby('month')[['quantity_sold', 'revenue', 'profit']].sum().reset_index()
 fig_combined = px.line(monthly, x='month', y=['quantity_sold', 'revenue', 'profit'], markers=True, title="Monthly Sales Trends")
@@ -385,7 +391,7 @@ st.plotly_chart(fig_combined, use_container_width=True)
 # Forecast Section
 # ----------------------
 st.markdown("---")
-st.markdown("### 🔮 Forecasted Sales")
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Forecasted Sales</div>", unsafe_allow_html=True)
 
 available_products = sales['Name'].dropna().unique()
 selected_product = st.selectbox("Select Product", sorted(available_products))

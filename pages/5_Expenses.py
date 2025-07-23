@@ -69,7 +69,7 @@ st.markdown("""
 
     /* Add Button */
     .add-expense-btn {
-        background-color: #F8FAFC;
+        background-color: #eaf1fb;
         color: #0F172A;
         font-weight: 600;
         border: 2px solid #0F172A;
@@ -122,13 +122,13 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --- Upload from CSV (Expander) ---
 st.markdown("<div class='section-card'>", unsafe_allow_html=True)
 with st.expander("📤 Upload Expenses from CSV", expanded=False):
-sample_csv = pd.DataFrame({
-    "date": ["2025-07-01"],
-    "category": ["Marketing"],
-    "expense_type": ["Variable"],
-    "amount": [5000],
-    "description": ["Social Media Campaign"]
-})
+    sample_csv = pd.DataFrame({
+        "date": ["2025-07-01"],
+        "category": ["Marketing"],
+        "expense_type": ["Variable"],
+        "amount": [5000],
+        "description": ["Social Media Campaign"]
+    })
     st.markdown("Sample Format:")
     st.dataframe(sample_csv, use_container_width=True)
 uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
@@ -225,6 +225,8 @@ try:
         max-width: 200px;
         min-height: 90px;
         margin-bottom: 0;
+        position: relative;
+        top: -60px;
     }
     .kpi-card-light .kpi-label {
         font-size: 1.1rem;
@@ -281,9 +283,11 @@ try:
 
     # --- Expense Breakdown Donut Chart ---
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-header'>📊 Expense Breakdown by Category</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Expense Breakdown by Category</div>", unsafe_allow_html=True)
     cat_df = df.groupby('category')["amount"].sum().reset_index().sort_values(by="amount", ascending=False)
-    fig_donut = px.pie(cat_df, names='category', values='amount', hole=0.45, color_discrete_sequence=px.colors.sequential.Blues)
+    fig_donut = px.pie(cat_df, names='category', values='amount', hole=0.45, color_discrete_sequence=[
+        "#A3C4F3", "#FFB7B2", "#B5EAD7", "#FFDAC1", "#E2F0CB",
+        "#C7CEEA", "#FFFACD", "#FFD6E0", "#D4A5A5", "#B5B2C2"],)
     fig_donut.update_traces(textinfo='percent+label')
     fig_donut.update_layout(showlegend=True, template='plotly_white')
     st.plotly_chart(fig_donut, use_container_width=True)
@@ -291,20 +295,20 @@ try:
 
     # --- Top Categories Table ---
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-header'>🏅 Top Expense Categories</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Top Expense Categories</div>", unsafe_allow_html=True)
     styled_cat = cat_df.style.background_gradient(cmap='Blues', subset=['amount'])
     st.dataframe(styled_cat, use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Recent Expenses Card ---
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-header'>🕒 Recent Expenses</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Recent Expenses</div>", unsafe_allow_html=True)
     st.dataframe(df.head(5)[["expense_date", "category", "TYPE", "amount", "description"]], use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Expense Anomalies ---
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-header'>🚨 Expense Anomalies</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Expense Anomalies</div>", unsafe_allow_html=True)
     anomaly_df = pd.DataFrame()
     for cat in cat_df['category']:
         cat_amounts = df[df['category'] == cat]['amount']
@@ -320,14 +324,14 @@ try:
 
     # --- Download Expenses Report ---
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-header'>⬇️ Download Expenses Report</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Download Expenses Report</div>", unsafe_allow_html=True)
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button("Download CSV", csv, "expenses_report.csv", "text/csv", key="download_expenses")
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Monthly Expense Trend (Bar Chart) ---
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-header'>📈 Monthly Expense Trend</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Monthly Expense Trend</div>", unsafe_allow_html=True)
     df["month"] = pd.to_datetime(df["expense_date"]).dt.to_period("M").astype(str)
     monthly_chart = df.groupby(["month", "TYPE"])["amount"].sum().reset_index()
     fig = px.bar(
