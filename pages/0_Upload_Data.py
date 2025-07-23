@@ -10,7 +10,7 @@ check_login()
 user_id = st.session_state.user_id
 
 st.set_page_config(page_title="Upload Data", layout="wide")
-st.markdown("<h2 style='color:#0F172A'>Upload Data</h2>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:left;margin-bottom:0.5rem;position:relative;top:-30px;'>Upload Data</h2>", unsafe_allow_html=True)
 
 
 # --------------------------
@@ -57,7 +57,7 @@ def get_csv_download_button(label, df, filename):
     )
 
 # --- CSV Upload Section ---
-st.markdown("<h3 style='color:#2563eb;margin-top:2rem;'>Upload Data via CSV</h3>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative;top:0px;'>Upload Data via CSV</h3>", unsafe_allow_html=True)
 product_sample = pd.DataFrame({
     "NAME": ["T-shirt"],
     "category": ["Clothing"],
@@ -86,7 +86,7 @@ with col1:
     get_csv_download_button("Product", product_sample, "sample_products.csv")
     handle_csv_upload("Product", "products", ["NAME", "category", "cost_price", "selling_price"])
 with col2:
-get_csv_download_button("Purchase", purchase_sample, "sample_purchases.csv")
+    get_csv_download_button("Purchase", purchase_sample, "sample_purchases.csv")
     handle_csv_upload("Purchase", "purchases", ["product_id", "vendor_name", "quantity_purchased", "cost_price", "order_date", "payment_due", "payment_status"])
 with col3:
     get_csv_download_button("Sales", sales_sample, "sample_sales.csv")
@@ -95,7 +95,7 @@ with col3:
 st.markdown("<hr style='margin:2.5rem 0;'>", unsafe_allow_html=True)
 
 # --- Manual Data Entry Section ---
-st.markdown("<h3 style='color:#2563eb;margin-top:2rem;'>Add Data Manually</h3>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative:top:-60px;'>Add Data Manually</h3>", unsafe_allow_html=True)
 col4, col5, col6 = st.columns(3)
 with col4:
     with st.expander("➕ Add Product Manually"):
@@ -113,40 +113,40 @@ with col4:
                 execute_query(query, (user_id, name, category, cost_price, selling_price))
                 st.success("Product added successfully!")
 with col5:
-with st.expander("➕ Add Purchase Manually"):
-    with st.form("purchase_form"):
-        product_id = st.number_input("Product ID", min_value=1)
-        vendor_name = st.text_input("Vendor Name")
-        quantity_purchased = st.number_input("Quantity Purchased", min_value=1)
-        cost_price = st.number_input("Cost Price", min_value=0.0)
-        order_date = st.date_input("Order Date")
-        payment_due = st.date_input("Payment Due Date")
-        payment_status = st.selectbox("Payment Status", ["Pending", "Completed","Overdue"])
-        submit = st.form_submit_button("Add Purchase")
-        if submit:
-            query = """
-                INSERT INTO Purchases (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            execute_query(query, (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status))
-            st.success("Purchase added successfully!")
+    with st.expander("➕ Add Purchase Manually"):
+        with st.form("purchase_form"):
+            product_id = st.number_input("Product ID", min_value=1)
+            vendor_name = st.text_input("Vendor Name")
+            quantity_purchased = st.number_input("Quantity Purchased", min_value=1)
+            cost_price = st.number_input("Cost Price", min_value=0.0)
+            order_date = st.date_input("Order Date")
+            payment_due = st.date_input("Payment Due Date")
+            payment_status = st.selectbox("Payment Status", ["Pending", "Completed","Overdue"])
+            submit = st.form_submit_button("Add Purchase")
+            if submit:
+                query = """
+                    INSERT INTO Purchases (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                execute_query(query, (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status))
+                st.success("Purchase added successfully!")
 with col6:
-with st.expander("➕ Add Sale Manually"):
-    with st.form("sales_form"):
-        product_id = st.number_input("Product ID", min_value=1, key="sale_pid")
-        quantity_sold = st.number_input("Quantity Sold", min_value=1)
-        selling_price = st.number_input("Selling Price", min_value=0.0)
-        sale_date = st.date_input("Sale Date")
-        shipped = st.selectbox("Shipped", ["Yes", "No"])
-        payment_received = st.selectbox("Payment Received", ["Yes", "No"])
-        submit = st.form_submit_button("Add Sale")
-        if submit:
-            query = """
-                INSERT INTO Sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received))
-            st.success("Sale added successfully!")
+    with st.expander("➕ Add Sale Manually"):
+         with st.form("sales_form"):
+            product_id = st.number_input("Product ID", min_value=1, key="sale_pid")
+            quantity_sold = st.number_input("Quantity Sold", min_value=1)
+            selling_price = st.number_input("Selling Price", min_value=0.0)
+            sale_date = st.date_input("Sale Date")
+            shipped = st.selectbox("Shipped", ["Yes", "No"])
+            payment_received = st.selectbox("Payment Received", ["Yes", "No"])
+            submit = st.form_submit_button("Add Sale")
+            if submit:
+                query = """
+                     INSERT INTO Sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received))
+                st.success("Sale added successfully!")
 
 
 # --------------------------

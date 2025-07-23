@@ -32,9 +32,83 @@ st.markdown("""
 # --- Authentication Check ---
 check_login()
 
-st.markdown("<h1 style='text-align:center;margin-bottom:0.5rem;'>📊 Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<div style='text-align:center;font-size:1.15rem;color:#475569;margin-bottom:2.5rem;font-weight:500;'>Unified business and finance insights at a glance.</div>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:left;margin-bottom:0.5rem;position:relative;left:-50px;top:-60px;'> Retail Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:left;font-size:1.15rem;color:#475569;margin-bottom:0 rem;font-weight:500;position:relative;left:-50px;top:-80px;'>Unified business and finance insights at a glance.</div>", unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
+    /* Style the Streamlit tabs */
+    .stTabs [data-baseweb="tab"] {
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        color: #000 !important;
+        padding: 0.75rem 2.5rem !important;
+       
+        margin-right: 8px !important;
+        transition: background 0.2s, color 0.2s;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #0F172A !important;
+        color: #fff !important;
+        box-shadow: 0 4px 16px rgba(59,130,246,0.10);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <style>
+    .stHorizontalBlock {
+        margin-bottom: 25px !important; 
+        margin-top: -20px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <style>
+    /* Style for the Recent Transactions section title */
+    .recent-transactions-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        letter-spacing: 1px;
+    }
+    /* Style for the subheaders (Recent Sales, Recent Purchases) */
+    .recent-subheader {
+        font-size: 1.15rem;
+        font-weight: 400;
+        color: #000;
+        margin-bottom: 0.5rem;
+        margin-top: 1.2rem;
+    }
+    /* Style for the dataframes */
+    .styled-table {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(30,41,59,0.06);
+        padding: 12px 18px;
+        margin-bottom: 1.5rem;
+    }
+    /* Make Streamlit tables look more modern */
+    .styled-table table {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        font-size: 1.05rem;
+    }
+    .styled-table th {
+        background: #f0f9ff !important;
+        color: #2563eb !important;
+        font-weight: 700 !important;
+        font-size: 1.08rem !important;
+    }
+    .styled-table td {
+        background: #fff !important;
+        color: #1e293b !important;
+        font-size: 1.05rem !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 # --- Load Data ---
 conn = get_connection()
 products = pd.read_sql("SELECT * FROM Products", conn)
@@ -117,7 +191,6 @@ with k6:
     """, unsafe_allow_html=True)
 
 # --- Category-wise Profitability ---
-st.markdown("<div class='section-title'>Category-wise Profitability</div>", unsafe_allow_html=True)
 merged = pd.merge(sales, products[['product_id', 'NAME', 'category', 'cost_price']], on='product_id', how='left')
 merged['Revenue'] = merged['quantity_sold'] * merged['selling_price']
 merged['Cost'] = merged['quantity_sold'] * merged['cost_price']
@@ -133,7 +206,6 @@ fig_cat.update_layout(
 )
 
 # --- Interactive Sales Breakdown ---
-st.markdown("<div class='section-title'>Sales Breakdown</div>", unsafe_allow_html=True)
 num_products = merged['NAME'].nunique()
 if num_products <= 3:
     top_n = num_products
@@ -170,7 +242,6 @@ fig_bar.update_layout(
 )
 
 # --- Supplier Payment Simulation ---
-st.markdown("<div class='section-title'>Supplier Payment Simulation</div>", unsafe_allow_html=True)
 purchases['outstanding'] = purchases.apply(lambda x: x['quantity_purchased'] * x['cost_price'] if x['payment_status'].lower() == 'pending' else 0, axis=1)
 supplier_outstanding = purchases.groupby('vendor_name')['outstanding'].sum().reset_index()
 supplier_outstanding = supplier_outstanding[supplier_outstanding['outstanding'] > 0]
@@ -189,13 +260,13 @@ else:
 sales_tab, vendor_tab = st.tabs(["📊 Sales Analytics", "🤝 Vendor Analytics"])
 
 with sales_tab:
-    st.markdown("<div class='section-title'>Category-wise Profitability</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Category-wise Profitability</div>", unsafe_allow_html=True)
     st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:center;'><div style='max-width:600px;width:100%;'>", unsafe_allow_html=True)
     st.plotly_chart(fig_cat, use_container_width=True)
     st.markdown("</div></div>", unsafe_allow_html=True)
     st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Sales Breakdown</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Sales Breakdown</div>", unsafe_allow_html=True)
     st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
     col7, col8 = st.columns(2)
     with col7:
@@ -209,7 +280,7 @@ with sales_tab:
     st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
 
 with vendor_tab:
-    st.markdown("<div class='section-title'>Supplier Payment Simulation</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Supplier Payment Simulation</div>", unsafe_allow_html=True)
     st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
     if not supplier_outstanding.empty:
         st.markdown("<div style='display:flex;justify-content:center;'><div style='max-width:600px;width:100%;'>", unsafe_allow_html=True)
@@ -220,7 +291,7 @@ with vendor_tab:
     st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
 
 # --- Inventory Holding Costs & DIO ---
-st.markdown("<div class='section-title'>Inventory Holding Costs & DIO</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative:top:-40px;'>Inventory Holding Costs & DIO</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 with col4:
     st.markdown(f"""
@@ -243,7 +314,7 @@ with col5:
 st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
 
 # --- Low Stock Alert ---
-st.markdown("<div class='section-title'>Low Stock Alerts</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative:top:-60px;'>Low Stock Alerts</div>", unsafe_allow_html=True)
 low_stock_df = live_stock[live_stock['live_stock'] <= 5].copy()
 if not low_stock_df.empty:
     st.markdown("<div class='alert-card'>⚠️ <b>Some products are low on stock!</b></div>", unsafe_allow_html=True)
@@ -265,17 +336,20 @@ else:
     st.markdown("<div class='success-card'>✅ No low stock alerts!</div>", unsafe_allow_html=True)
 
 # --- Recent Transactions ---
-st.markdown("<div class='section-title'>Recent Transactions</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative:top:-40px;'>Recent Transactions</div>", unsafe_allow_html=True)
 recent_sales = sales.sort_values('sale_date', ascending=False).head(5)
 recent_purchases = purchases.sort_values('order_date', ascending=False).head(5)
 col6, col7 = st.columns(2)
-with col6:
-    st.markdown("<b>Recent Sales</b>", unsafe_allow_html=True)
-    st.dataframe(recent_sales[['sale_date', 'product_id', 'quantity_sold', 'selling_price']], use_container_width=True)
-with col7:
-    st.markdown("<b>Recent Purchases</b>", unsafe_allow_html=True)
-    st.dataframe(recent_purchases[['order_date', 'product_id', 'quantity_purchased', 'cost_price']], use_container_width=True)
 
+with col6:
+    st.markdown("<div class='recent-subheader'>Recent Sales</div>", unsafe_allow_html=True)
+    st.dataframe(recent_sales[['sale_date', 'product_id', 'quantity_sold', 'selling_price']], use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col7:
+    st.markdown("<div class='recent-subheader'>Recent Purchases</div>", unsafe_allow_html=True)
+    st.dataframe(recent_purchases[['order_date', 'product_id', 'quantity_purchased', 'cost_price']], use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 # --- Download Report Button ---
 import io
 import base64

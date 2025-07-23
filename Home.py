@@ -20,6 +20,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
+    /* Style the Streamlit tabs */
+    .stTabs [data-baseweb="tab"] {
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        color: #000 !important;
+        padding: 0.75rem 2.5rem !important;
+        margin-right: 8px !important;
+        transition: background 0.2s, color 0.2s;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #0F172A !important;
+        color: #fff !important;
+        box-shadow: 0 4px 16px rgba(59,130,246,0.10);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- Key Features Section (before login) ---
 def show_features():
     st.markdown("""
