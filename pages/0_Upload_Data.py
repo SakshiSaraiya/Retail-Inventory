@@ -56,43 +56,14 @@ def get_csv_download_button(label, df, filename):
         use_container_width=True
     )
 
-# --------------------------
-# PRODUCT SECTION
-# --------------------------
-st.subheader("Upload or Enter Product Data")
-
+# --- CSV Upload Section ---
+st.markdown("<h3 style='color:#2563eb;margin-top:2rem;'>Upload Data via CSV</h3>", unsafe_allow_html=True)
 product_sample = pd.DataFrame({
     "NAME": ["T-shirt"],
     "category": ["Clothing"],
     "cost_price": [200.0],
-    "selling_price": [300.0],
-    "stock": [50]
+    "selling_price": [300.0]
 })
-get_csv_download_button("Product", product_sample, "sample_products.csv")
-handle_csv_upload("Product", "products", ["NAME", "category", "cost_price", "selling_price", "stock"])
-
-with st.expander("➕ Add Product Manually"):
-    with st.form("product_form"):
-        name = st.text_input("Product Name")
-        category = st.text_input("Category")
-        cost_price = st.number_input("Cost Price", min_value=0.0)
-        selling_price = st.number_input("Selling Price", min_value=0.0)
-        stock = st.number_input("Stock", min_value=0)
-        submit = st.form_submit_button("Add Product")
-        if submit:
-            query = """
-                INSERT INTO Products (user_id, NAME, category, cost_price, selling_price, stock)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            execute_query(query, (user_id, name, category, cost_price, selling_price, stock))
-            st.success("Product added successfully!")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --------------------------
-# PURCHASE SECTION
-# --------------------------
-st.subheader(" Upload or Enter Purchase Data")
-
 purchase_sample = pd.DataFrame({
     "product_id": [1],
     "vendor_name": ["Vendor A"],
@@ -102,10 +73,46 @@ purchase_sample = pd.DataFrame({
     "payment_due": ["2025-08-01"],
     "payment_status": ["Pending"]
 })
+sales_sample = pd.DataFrame({
+    "product_id": [1],
+    "quantity_sold": [10],
+    "selling_price": [300.0],
+    "sale_date": ["2025-07-20"],
+    "shipped": ["Yes"],
+    "payment_received": ["Yes"]
+})
+col1, col2, col3 = st.columns(3)
+with col1:
+    get_csv_download_button("Product", product_sample, "sample_products.csv")
+    handle_csv_upload("Product", "products", ["NAME", "category", "cost_price", "selling_price"])
+with col2:
 get_csv_download_button("Purchase", purchase_sample, "sample_purchases.csv")
-handle_csv_upload("Purchase", "purchases",
-                  ["product_id", "vendor_name", "quantity_purchased", "cost_price", "order_date", "payment_due", "payment_status"])
+    handle_csv_upload("Purchase", "purchases", ["product_id", "vendor_name", "quantity_purchased", "cost_price", "order_date", "payment_due", "payment_status"])
+with col3:
+    get_csv_download_button("Sales", sales_sample, "sample_sales.csv")
+    handle_csv_upload("Sales", "sales", ["product_id", "quantity_sold", "selling_price", "sale_date", "shipped", "payment_received"])
 
+st.markdown("<hr style='margin:2.5rem 0;'>", unsafe_allow_html=True)
+
+# --- Manual Data Entry Section ---
+st.markdown("<h3 style='color:#2563eb;margin-top:2rem;'>Add Data Manually</h3>", unsafe_allow_html=True)
+col4, col5, col6 = st.columns(3)
+with col4:
+    with st.expander("➕ Add Product Manually"):
+        with st.form("product_form"):
+            name = st.text_input("Product Name")
+            category = st.text_input("Category")
+            cost_price = st.number_input("Cost Price", min_value=0.0)
+            selling_price = st.number_input("Selling Price", min_value=0.0)
+            submit = st.form_submit_button("Add Product")
+            if submit:
+                query = """
+                    INSERT INTO Products (user_id, NAME, category, cost_price, selling_price)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                execute_query(query, (user_id, name, category, cost_price, selling_price))
+                st.success("Product added successfully!")
+with col5:
 with st.expander("➕ Add Purchase Manually"):
     with st.form("purchase_form"):
         product_id = st.number_input("Product ID", min_value=1)
@@ -123,25 +130,7 @@ with st.expander("➕ Add Purchase Manually"):
             """
             execute_query(query, (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status))
             st.success("Purchase added successfully!")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --------------------------
-# SALES SECTION
-# --------------------------
-st.subheader(" Upload or Enter Sales Data")
-
-sales_sample = pd.DataFrame({
-    "product_id": [1],
-    "quantity_sold": [10],
-    "selling_price": [300.0],
-    "sale_date": ["2025-07-20"],
-    "shipped": ["Yes"],
-    "payment_received": ["Yes"]
-})
-get_csv_download_button("Sales", sales_sample, "sample_sales.csv")
-handle_csv_upload("Sales", "sales",
-                  ["product_id", "quantity_sold", "selling_price", "sale_date", "shipped", "payment_received"])
-
+with col6:
 with st.expander("➕ Add Sale Manually"):
     with st.form("sales_form"):
         product_id = st.number_input("Product ID", min_value=1, key="sale_pid")

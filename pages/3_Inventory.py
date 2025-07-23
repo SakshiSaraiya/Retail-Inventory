@@ -55,6 +55,52 @@ st.markdown("""
         color: #1E293B;
         font-size: 0.95rem;
     }
+    .section-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(30,41,59,0.08);
+        padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    .section-header {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .kpi-card-light {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 180px;
+        min-height: 90px;
+        margin-bottom: 1.5rem;
+    }
+    .kpi-card-light .kpi-label {
+        font-size: 1.1rem;
+        color: #334155;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+    }
+    .kpi-card-light .kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #f59e42;
+    }
+    .kpi-section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.1rem;
+        text-align: center;
+        color: #1E293B;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -66,9 +112,9 @@ st.markdown("<h2 style='margin-bottom: 1rem;'>Inventory Overview</h2>", unsafe_a
 conn = get_connection()
 
 try:
-    purchases = pd.read_sql("SELECT product_id, quantity_purchased, cost_price FROM Purchases", conn)
-    sales = pd.read_sql("SELECT product_id, quantity_sold, selling_price FROM Sales", conn)
-    products = pd.read_sql("SELECT Name, category, product_id, stock, cost_price, selling_price FROM Products", conn)
+    purchases = pd.read_sql("SELECT product_id, quantity_purchased, cost_price, order_date FROM Purchases", conn)
+    sales = pd.read_sql("SELECT product_id, quantity_sold, selling_price, sale_date FROM Sales", conn)
+    products = pd.read_sql("SELECT Name, category, product_id, cost_price, selling_price FROM Products", conn)
 except Exception as e:
     st.error(f"❌ Error loading data: {e}")
     st.stop()
@@ -92,8 +138,8 @@ inventory_df = inventory_df.merge(sales_agg, on='product_id', how='left')
 inventory_df['quantity_purchased'] = inventory_df['quantity_purchased'].fillna(0)
 inventory_df['quantity_sold'] = inventory_df['quantity_sold'].fillna(0)
 
-# Live stock = product stock + quantity_purchased - quantity_sold
-inventory_df['live_stock'] = inventory_df['stock'] + inventory_df['quantity_purchased'] - inventory_df['quantity_sold']
+# Live stock = quantity_purchased - quantity_sold
+inventory_df['live_stock'] = inventory_df['quantity_purchased'] - inventory_df['quantity_sold']
 inventory_df['stock_value'] = inventory_df['live_stock'] * inventory_df['cost_price']
 inventory_df['potential_revenue'] = inventory_df['live_stock'] * inventory_df['selling_price']
 inventory_df['profit_margin'] = inventory_df['selling_price'] - inventory_df['cost_price']
@@ -114,42 +160,40 @@ if search_term:
     filtered = filtered[filtered['name'].str.contains(search_term, case=False)]
 
 # -------------------------
-# Key Metrics
+# Key Metrics (Light Card Format, Even Row, 4 KPIs)
 # -------------------------
-st.markdown("<h4 style='margin-top:2rem;'>Key Metrics</h4>", unsafe_allow_html=True)
+st.markdown("<div style='max-width:900px;margin:0 auto 2.5rem auto;'>", unsafe_allow_html=True)
+st.markdown("<div class='kpi-section-title'>Key Metrics</div>", unsafe_allow_html=True)
 k1, k2, k3, k4 = st.columns(4)
-
 with k1:
     st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Total Live Stock</h4>
-            <h2>{int(filtered['live_stock'].sum())}</h2>
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Total Live Stock</div>
+            <div class='kpi-value'>{int(filtered['live_stock'].sum())}</div>
         </div>
     """, unsafe_allow_html=True)
-
 with k2:
     st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Stock Value</h4>
-            <h2>₹ {filtered['stock_value'].sum():,.2f}</h2>
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Stock Value</div>
+            <div class='kpi-value'>₹ {filtered['stock_value'].sum():,.2f}</div>
         </div>
     """, unsafe_allow_html=True)
-
 with k3:
     st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Revenue Potential</h4>
-            <h2>₹ {filtered['potential_revenue'].sum():,.2f}</h2>
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Revenue Potential</div>
+            <div class='kpi-value'>₹ {filtered['potential_revenue'].sum():,.2f}</div>
         </div>
     """, unsafe_allow_html=True)
-
 with k4:
     st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Avg. Margin</h4>
-            <h2>₹ {filtered['profit_margin'].mean():.2f}</h2>
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Avg. Margin</div>
+            <div class='kpi-value'>₹ {filtered['profit_margin'].mean():.2f}</div>
         </div>
     """, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------
 # Product Table
@@ -158,19 +202,100 @@ st.markdown("### 📋 Product List (Live Stock)")
 st.dataframe(filtered[['product_id', 'name', 'Category', 'cost_price', 'selling_price', 'live_stock', 'stock_value']], use_container_width=True)
 
 # -------------------------
-# Low Stock Alerts
+# Raw Data Table with Edit/Delete (Products)
+# -------------------------
+show_raw_products = st.checkbox("Show Raw Product Data (Edit/Delete)")
+if show_raw_products:
+    st.markdown("<h4 style='margin-top:2.5rem;'>Products Table (Raw Data)</h4>", unsafe_allow_html=True)
+    st.dataframe(products, use_container_width=True)
+    st.markdown("<b>Edit or Delete a Product Record:</b>", unsafe_allow_html=True)
+    selected_pid = st.selectbox("Select Product ID to Edit/Delete", products['product_id'] if 'product_id' in products.columns else products.index)
+    action = st.radio("Action", ["Edit", "Delete"], key="product_action")
+    if action == "Edit":
+        row = products[products['product_id'] == selected_pid].iloc[0] if 'product_id' in products.columns else products.loc[[selected_pid]].iloc[0]
+        with st.form("edit_product_form"):
+            st.write("Edit the fields and click Save:")
+            name = st.text_input("Product Name", value=row['Name'])
+            category = st.text_input("Category", value=row['category'])
+            cost_price = st.number_input("Cost Price", min_value=0.0, value=float(row['cost_price']))
+            selling_price = st.number_input("Selling Price", min_value=0.0, value=float(row['selling_price']))
+            submit = st.form_submit_button("Save Changes")
+            if submit:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE Products SET Name=%s, category=%s, cost_price=%s, selling_price=%s WHERE product_id=%s
+                """, (name, category, cost_price, selling_price, selected_pid))
+                conn.commit()
+                cursor.close()
+                conn.close()
+                st.success("Product record updated!")
+                st.experimental_rerun()
+    elif action == "Delete":
+        if st.button("Delete This Product", key="delete_product_btn", help="Delete this product", use_container_width=True):
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM Products WHERE product_id=%s", (selected_pid,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            st.success("Product record deleted!")
+            st.experimental_rerun()
+
+# -------------------------
+# Slow Moving Products (last 30 days)
+# -------------------------
+if 'sale_date' in sales.columns:
+    sales['sale_date'] = pd.to_datetime(sales['sale_date'], errors='coerce')
+    last_30 = sales[sales['sale_date'] >= pd.Timestamp.now() - pd.Timedelta(days=30)]
+    slow_sales = last_30.groupby('product_id')['quantity_sold'].sum().reset_index()
+    slow_sales = products.merge(slow_sales, on='product_id', how='left')
+    slow_sales['quantity_sold'] = slow_sales['quantity_sold'].fillna(0)
+    slowest = slow_sales.sort_values(by='quantity_sold').head(10)
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🐢 Slow Moving Products (Last 30 Days)</div>', unsafe_allow_html=True)
+    st.dataframe(slowest[["product_id", "Name", "category", "quantity_sold"]], use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -------------------------
+# Download Inventory Report
+# -------------------------
+import io
+csv = filtered.to_csv(index=False).encode('utf-8')
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
+st.download_button('Download Inventory Report (CSV)', csv, 'inventory_report.csv', 'text/csv')
+st.markdown('</div>', unsafe_allow_html=True)
+
+# -------------------------
+# Inventory Age Analysis (if purchase date available)
+# -------------------------
+if 'order_date' in purchases.columns:
+    purchases['order_date'] = pd.to_datetime(purchases['order_date'], errors='coerce')
+    product_first_purchase = purchases.groupby('product_id')['order_date'].min().reset_index()
+    inventory_age = products.merge(product_first_purchase, on='product_id', how='left')
+    inventory_age['days_in_stock'] = (pd.Timestamp.now() - inventory_age['order_date']).dt.days
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">⏳ Inventory Age Analysis</div>', unsafe_allow_html=True)
+    st.dataframe(inventory_age[["product_id", "Name", "category", "days_in_stock"]], use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -------------------------
+# Low Stock Alerts with Reorder Action
 # -------------------------
 low_stock = filtered[filtered['live_stock'] < 10]
 if not low_stock.empty:
-    st.markdown("### ⚠️ Low Stock Alerts")
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">⚠️ Low Stock Alerts</div>', unsafe_allow_html=True)
     st.markdown(f"""
-        <div style='background-color:#F87171;padding:10px;border-radius:5px;color:white;font-weight:600;'>
+        <div style='background-color:#F87171;padding:10px;border-radius:5px;color:white;font-weight:600;margin-bottom:1rem;'>
             ⚠️ {low_stock.shape[0]} product(s) are low on stock
         </div>
     """, unsafe_allow_html=True)
-    st.dataframe(low_stock[['product_id', 'name', 'Category', 'live_stock']], use_container_width=True)
+    low_stock['Action'] = 'Reorder Now'
+    st.dataframe(low_stock[["product_id", "name", "Category", "live_stock", "Action"]], use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.success("✅ All filtered products are well stocked.")
+    st.success('✅ All filtered products are well stocked.')
 
 # -------------------------
 # Visualizations

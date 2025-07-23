@@ -69,13 +69,105 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# -------------------------
-# Title
-# -------------------------
-
+# --- GLOBAL STYLES FOR ZOHO-LIKE LOOK ---
 st.markdown("""
-    <h2 style='margin-bottom: 1rem;'>Purchase Overview</h2>
+    <style>
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(135deg, #1e293b 90%, #22304a 100%);
+        min-width: 16rem;
+        max-width: 16rem;
+        padding-top: 1.2rem;
+        box-shadow: 2px 0 16px rgba(30,41,59,0.07);
+    }
+    [data-testid="stSidebar"] * {
+        font-family: 'Segoe UI', 'Roboto', sans-serif;
+        color: #E2E8F0 !important;
+        font-size: 1rem !important;
+    }
+    .sidebar-menu {
+        margin-bottom: 2.5rem;
+    }
+    .sidebar-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        padding: 0.7rem 1.2rem;
+        border-radius: 10px;
+        margin-bottom: 0.3rem;
+        cursor: pointer;
+        transition: background 0.18s;
+        font-weight: 600;
+    }
+    .sidebar-menu-item.active, .sidebar-menu-item:hover {
+        background: #2563eb33;
+        color: #fff !important;
+    }
+    .sidebar-menu-item .icon {
+        font-size: 1.25rem;
+        margin-right: 0.2rem;
+    }
+    /* Main background */
+    .main-bg {
+        background: #f8fafc;
+        min-height: 100vh;
+        padding: 0 2.5rem 2rem 2.5rem;
+    }
+    /* Card styles */
+    .kpi-card, .white-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(30,41,59,0.08);
+        padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 180px;
+        min-height: 90px;
+        margin-top: 0rem;
+    }
+    .kpi-label {
+        font-size: 1.08rem;
+        color: #475569;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+    }
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #f59e42;
+    }
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.1rem;
+        margin-top: 0rem;
+    }
+    .divider {
+        border: none;
+        border-top: 1.5px solid #e2e8f0;
+        margin: 2.2rem 0 2.2rem 0;
+    }
+    /* Table styles */
+    .white-card table {
+        font-size: 1.01rem;
+        color: #1e293b;
+    }
+    </style>
 """, unsafe_allow_html=True)
+
+# --- REMOVE CUSTOM SIDEBAR MENU WITH ICONS ---
+# (No custom HTML sidebar menu here; rely on Streamlit's default sidebar navigation)
+
+# --- MAIN CONTENT WRAPPER ---
+
+# --- PAGE TITLE ---
+st.markdown("<div class='section-title'>Purchase Overview</div>", unsafe_allow_html=True)
 
 # -------------------------
 # Connect to SQL
@@ -97,53 +189,157 @@ total_quantity = purchases['quantity_purchased'].sum()
 total_cost = (purchases['quantity_purchased'] * purchases['cost_price']).sum()
 vendors = purchases['vendor_name'].nunique()
 
-# -------------------------
-# KPI Display
-# -------------------------
-st.markdown("<h4 style='margin-top:2rem;'>Key Metrics</h4>", unsafe_allow_html=True)
-col1, col2, col3, col4 = st.columns(4)
+# --- KPI CARDS ---
+k1, k2, k3, k4 = st.columns(4)
+with k1:
+    st.markdown(f"""<div class='kpi-card'><div class='kpi-label'>Total Orders</div><div class='kpi-value'>{total_orders}</div></div>""", unsafe_allow_html=True)
+with k2:
+    st.markdown(f"""<div class='kpi-card'><div class='kpi-label'>Units Purchased</div><div class='kpi-value'>{total_quantity}</div></div>""", unsafe_allow_html=True)
+with k3:
+    st.markdown(f"""<div class='kpi-card'><div class='kpi-label'>Total Spend</div><div class='kpi-value'>₹ {total_cost:,.2f}</div></div>""", unsafe_allow_html=True)
+with k4:
+    st.markdown(f"""<div class='kpi-card'><div class='kpi-label'>Vendors</div><div class='kpi-value'>{vendors}</div></div>""", unsafe_allow_html=True)
 
-with col1:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Total Orders</h4>
-            <h2>{total_orders}</h2>
-        </div>
-    """, unsafe_allow_html=True)
+# --- DIVIDER ---
+st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 
-with col2:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Units Purchased</h4>
-            <h2>{int(total_quantity)}</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Total Spend</h4>
-            <h2>₹ {total_cost:,.2f}</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col4:
-    st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Vendors</h4>
-            <h2>{vendors}</h2>
-        </div>
-    """, unsafe_allow_html=True)
+# --- Raw Data Table with Edit/Delete (toggle) ---
+show_raw = st.checkbox("Show Raw Data Table (Edit/Delete)")
+if show_raw:
+    st.markdown("<h4 style='margin-top:2.5rem;'>Purchase Records</h4>", unsafe_allow_html=True)
+    raw_df = purchases.copy()
+    st.dataframe(raw_df, use_container_width=True)
+    st.markdown("<b>Edit or Delete a Purchase Record:</b>", unsafe_allow_html=True)
+    selected_id = st.selectbox("Select Purchase ID to Edit/Delete", raw_df['purchase_id'] if 'purchase_id' in raw_df.columns else raw_df.index)
+    action = st.radio("Action", ["Edit", "Delete"])
+    if action == "Edit":
+        row = raw_df[raw_df['purchase_id'] == selected_id].iloc[0] if 'purchase_id' in raw_df.columns else raw_df.loc[[selected_id]].iloc[0]
+        with st.form("edit_purchase_form"):
+            st.write("Edit the fields and click Save:")
+            product_id = st.number_input("Product ID", min_value=1, value=int(row['product_id']))
+            vendor_name = st.text_input("Vendor Name", value=row['vendor_name'])
+            quantity_purchased = st.number_input("Quantity Purchased", min_value=1, value=int(row['quantity_purchased']))
+            cost_price = st.number_input("Cost Price", min_value=0.0, value=float(row['cost_price']))
+            order_date = st.date_input("Order Date", value=row['order_date'])
+            payment_due = st.date_input("Payment Due Date", value=row['payment_due'])
+            payment_status = st.selectbox("Payment Status", ["Pending", "Completed", "Overdue"], index=["Pending", "Completed", "Overdue"].index(row['payment_status']) if row['payment_status'] in ["Pending", "Completed", "Overdue"] else 0)
+            submit = st.form_submit_button("Save Changes")
+            if submit:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE Purchases SET product_id=%s, vendor_name=%s, quantity_purchased=%s, cost_price=%s, order_date=%s, payment_due=%s, payment_status=%s WHERE purchase_id=%s
+                """, (product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status, selected_id))
+                conn.commit()
+                cursor.close()
+                conn.close()
+                st.success("Purchase record updated!")
+                st.experimental_rerun()
+    elif action == "Delete":
+        if st.button("Delete This Record", key="delete_btn", help="Delete this record", use_container_width=True):
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM Purchases WHERE purchase_id=%s", (selected_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            st.success("Purchase record deleted!")
+            st.experimental_rerun()
 
 # -------------------------
 # Sidebar Filters
 # -------------------------
-st.sidebar.header("Filter Purchases")
-product_filter = st.sidebar.multiselect("Product ID", purchases['product_id'].dropna().unique(), default=purchases['product_id'].unique())
-vendor_filter = st.sidebar.multiselect("Vendor", purchases['vendor_name'].dropna().unique(), default=purchases['vendor_name'].unique())
-status_filter = st.sidebar.multiselect("Payment Status", purchases['payment_status'].dropna().unique(), default=purchases['payment_status'].unique())
-start_date = st.sidebar.date_input("Start Date", purchases['order_date'].min())
-end_date = st.sidebar.date_input("End Date", purchases['order_date'].max())
+st.markdown("""
+    <style>
+    [data-testid="stSidebar"] {
+        background: linear-gradient(135deg, #1e293b 90%, #22304a 100%);
+        min-width: 16rem;
+        max-width: 16rem;
+        padding-top: 1.2rem;
+        box-shadow: 2px 0 16px rgba(30,41,59,0.07);
+    }
+    [data-testid="stSidebar"] * {
+        font-family: 'Segoe UI', 'Roboto', sans-serif;
+        color: #E2E8F0 !important;
+        font-size: 1rem !important;
+    }
+    .sidebar-filter-header {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: #F1F5F9;
+        margin-bottom: 0.7rem;
+        letter-spacing: 0.5px;
+    }
+    .sidebar-divider {
+        border: none;
+        border-top: 1.5px solid #334155;
+        margin: 0.7rem 0 1.2rem 0;
+    }
+    .sidebar-widget {
+        background: linear-gradient(135deg, #22304a 80%, #2d3c54 100%);
+        border-radius: 16px;
+        padding: 1.1rem 1rem 0.8rem 1rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 4px 16px rgba(30,41,59,0.10);
+        border: 1.5px solid #334155;
+        transition: box-shadow 0.2s, border 0.2s;
+    }
+    .sidebar-widget:hover {
+        box-shadow: 0 6px 24px rgba(96,165,250,0.13);
+        border: 1.5px solid #60A5FA;
+    }
+    .sidebar-widget label {
+        color: #F1F5F9 !important;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+        display: block;
+    }
+    .sidebar-widget input,
+    .sidebar-widget select,
+    .sidebar-widget .stMultiSelect,
+    .sidebar-widget .stDateInput,
+    .sidebar-widget .stTextInput,
+    .sidebar-widget .stNumberInput {
+        border-radius: 10px !important;
+        background: #f8fafc !important;
+        color: #1E293B !important;
+        border: 1.5px solid #cbd5e1 !important;
+        margin-bottom: 0.2rem;
+        font-size: 1rem !important;
+    }
+    /* MAXIMUM SPECIFICITY for date input */
+    [data-testid="stSidebar"] input[type="date"],
+    [data-testid="stSidebar"] .stDateInput input {
+        color: #000 !important;
+        background: #f8fafc !important;
+        font-size: 1rem !important;
+    }
+    .sidebar-widget input::placeholder {
+        color: #334155 !important;
+        opacity: 1 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Sidebar Filters ---
+st.sidebar.markdown("<div class='sidebar-filter-header'>Filter Purchases</div>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr class='sidebar-divider'>", unsafe_allow_html=True)
+with st.sidebar:
+    with st.container():
+        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
+        product_filter = st.multiselect("Product ID", purchases['product_id'].dropna().unique(), default=purchases['product_id'].unique(), key="product_filter")
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
+        vendor_filter = st.multiselect("Vendor", purchases['vendor_name'].dropna().unique(), default=purchases['vendor_name'].unique(), key="vendor_filter")
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
+        status_filter = st.multiselect("Payment Status", purchases['payment_status'].dropna().unique(), default=purchases['payment_status'].unique(), key="status_filter")
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sidebar-widget'>", unsafe_allow_html=True)
+        start_date = st.date_input("Start Date", purchases['order_date'].min(), key="start_date")
+        end_date = st.date_input("End Date", purchases['order_date'].max(), key="end_date")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 filtered = purchases[
     (purchases['product_id'].isin(product_filter)) &
@@ -156,14 +352,16 @@ filtered = purchases[
 # -------------------------
 # Display Filtered Table
 # -------------------------
-st.markdown("<h4 style='margin-top:2rem;'>Purchase Records</h4>", unsafe_allow_html=True)
-st.dataframe(filtered, use_container_width=True)
+# Remove the filtered purchase records table below the KPIs
+# (Delete or comment out the following lines:)
+# st.markdown("<h4 style='margin-top:2rem;'>Purchase Records</h4>", unsafe_allow_html=True)
+# st.dataframe(filtered, use_container_width=True)
 
 # ---------- Payment Alerts ----------
-st.markdown("<h3 style='margin-top:2rem; color:#334155;'>Payment Alerts</h3>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>Payment Alerts</div>", unsafe_allow_html=True)
 today = pd.to_datetime("today")
-pending = filtered[filtered['payment_status'].str.lower() == "pending"]
-overdue = filtered[(filtered['payment_status'].str.lower() != "paid") & (filtered['payment_due'] < today)]
+pending = filtered[(filtered['payment_status'].str.lower() == "pending") & (filtered['payment_due'] >= today)]
+overdue = filtered[(filtered['payment_status'].str.lower() == "pending") & (filtered['payment_due'] < today)]
 
 col1, col2 = st.columns(2)
 
@@ -244,3 +442,5 @@ fig_monthly.update_layout(
     plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF"
 )
 st.plotly_chart(fig_monthly, use_container_width=True)
+
+# --- END MAIN CONTENT WRAPPER ---

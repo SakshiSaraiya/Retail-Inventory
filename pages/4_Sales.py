@@ -43,6 +43,115 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+<style>
+.kpi-section-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    padding: 2.5rem 2rem 2rem 2rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.kpi-row {
+    display: flex;
+    justify-content: center;
+    gap: 2.2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.kpi-card-light {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    max-width: 200px;
+    min-height: 110px;
+    margin-bottom: 0;
+}
+.kpi-card-light .kpi-icon {
+    font-size: 2.1rem;
+    margin-bottom: 0.3rem;
+}
+.kpi-card-light .kpi-label {
+    font-size: 1.1rem;
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+.kpi-card-light .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f59e42;
+}
+.kpi-section-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 2.2rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+.quick-insights-row {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+.quick-insight-card {
+    background: #f8fafc;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(30,41,59,0.06);
+    padding: 1.1rem 1.5rem;
+    font-size: 1.08rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 220px;
+}
+.quick-insight-card .icon {
+    font-size: 1.5rem;
+}
+</style>
+""", unsafe_allow_html=True)
+st.markdown("""
+<style>
+.kpi-card-light {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    min-height: 90px;
+    margin-bottom: 1.5rem;
+}
+.kpi-card-light .kpi-label {
+    font-size: 1.1rem;
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+.kpi-card-light .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f59e42;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""<h2 style='margin-bottom:1rem;'>📈 Sales Overview</h2>""", unsafe_allow_html=True)
 
@@ -92,17 +201,110 @@ if payment_filter != "All":
     filtered_sales = filtered_sales[filtered_sales['payment_received'] == payment_filter]
 
 # ----------------------
-# KPIs
+# KPIs (Light Card Format, Even Row, 4 KPIs, Match Inventory Style)
 # ----------------------
-st.markdown("### 📊 Sales KPIs")
+avg_order_value = filtered_sales['revenue'].sum() / len(filtered_sales) if len(filtered_sales) > 0 else 0
+st.markdown("<div style='max-width:900px;margin:0 auto 2.5rem auto;'>", unsafe_allow_html=True)
+st.markdown("<div class='kpi-section-title'>Key Metrics</div>", unsafe_allow_html=True)
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("🧾 Total Sales", int(filtered_sales['quantity_sold'].sum()))
-k2.metric("💰 Total Revenue", f"₹ {filtered_sales['revenue'].sum():,.2f}")
-k3.metric("📈 Total Profit", f"₹ {filtered_sales['profit'].sum():,.2f}")
-k4.metric("🛙 Orders", len(filtered_sales))
+with k1:
+    st.markdown(f"""
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Total Sales</div>
+            <div class='kpi-value'>{int(filtered_sales['quantity_sold'].sum())}</div>
+        </div>
+    """, unsafe_allow_html=True)
+with k2:
+    st.markdown(f"""
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Total Revenue</div>
+            <div class='kpi-value'>₹ {filtered_sales['revenue'].sum():,.2f}</div>
+        </div>
+    """, unsafe_allow_html=True)
+with k3:
+    st.markdown(f"""
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Total Profit</div>
+            <div class='kpi-value'>₹ {filtered_sales['profit'].sum():,.2f}</div>
+        </div>
+    """, unsafe_allow_html=True)
+with k4:
+    st.markdown(f"""
+        <div class='kpi-card-light' style='padding:1.3rem 1rem 1rem 1rem;min-width:170px;max-width:200px;'>
+            <div class='kpi-label'>Avg. Order Value</div>
+            <div class='kpi-value'>₹ {avg_order_value:,.2f}</div>
+        </div>
+    """, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------------
-# Transactions Table
+# Quick Insights Row
+# ----------------------
+best_seller = filtered_sales.groupby('Name')['quantity_sold'].sum().idxmax() if not filtered_sales.empty else None
+most_profitable = filtered_sales.groupby('Name')['profit'].sum().idxmax() if not filtered_sales.empty else None
+recent_sale = filtered_sales.sort_values('sales_date', ascending=False).iloc[0] if not filtered_sales.empty else None
+st.markdown("<div class='quick-insights-row'>", unsafe_allow_html=True)
+if best_seller:
+    st.markdown(f"<div class='quick-insight-card'><span class='icon'>🏆</span>Best Seller: <b>{best_seller}</b></div>", unsafe_allow_html=True)
+if most_profitable:
+    st.markdown(f"<div class='quick-insight-card'><span class='icon'>💸</span>Most Profitable: <b>{most_profitable}</b></div>", unsafe_allow_html=True)
+if recent_sale is not None:
+    st.markdown(f"<div class='quick-insight-card'><span class='icon'>🕒</span>Recent Sale: <b>{recent_sale['Name']}</b> ({recent_sale['sales_date'].date()})</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ----------------------
+# Download Sales Report
+# ----------------------
+import io
+csv = filtered_sales.to_csv(index=False).encode('utf-8')
+st.download_button('Download Sales Report (CSV)', csv, 'sales_report.csv', 'text/csv')
+
+# ----------------------
+# Raw Data Table with Edit/Delete (Sales)
+# ----------------------
+show_raw_sales = st.checkbox("Show Raw Sales Data (Edit/Delete)")
+if show_raw_sales:
+    st.markdown("<h4 style='margin-top:2.5rem;'>Sales Table (Raw Data)</h4>", unsafe_allow_html=True)
+    st.dataframe(sales, use_container_width=True)
+    st.markdown("<b>Edit or Delete a Sales Record:</b>", unsafe_allow_html=True)
+    selected_sid = st.selectbox("Select Sale ID to Edit/Delete", sales['sale_id'] if 'sale_id' in sales.columns else sales.index)
+    action = st.radio("Action", ["Edit", "Delete"], key="sales_action")
+    if action == "Edit":
+        row = sales[sales['sale_id'] == selected_sid].iloc[0] if 'sale_id' in sales.columns else sales.loc[[selected_sid]].iloc[0]
+        with st.form("edit_sales_form"):
+            st.write("Edit the fields and click Save:")
+            product_id = st.text_input("Product ID", value=row['product_id'])
+            quantity_sold = st.number_input("Quantity Sold", min_value=1, value=int(row['quantity_sold']))
+            selling_price = st.number_input("Selling Price", min_value=0.0, value=float(row['selling_price']))
+            sale_date = st.date_input("Sale Date", value=row['sale_date'])
+            shipped = st.selectbox("Shipped", ["Yes", "No"], index=["Yes", "No"].index(row['shipped']) if row['shipped'] in ["Yes", "No"] else 0)
+            payment_received = st.selectbox("Payment Received", ["Yes", "No"], index=["Yes", "No"].index(row['payment_received']) if row['payment_received'] in ["Yes", "No"] else 0)
+            submit = st.form_submit_button("Save Changes")
+            if submit:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE Sales SET product_id=%s, quantity_sold=%s, selling_price=%s, sale_date=%s, shipped=%s, payment_received=%s WHERE sale_id=%s
+                """, (product_id, quantity_sold, selling_price, sale_date, shipped, payment_received, selected_sid))
+                conn.commit()
+                cursor.close()
+                conn.close()
+                st.success("Sales record updated!")
+                st.experimental_rerun()
+    elif action == "Delete":
+        if st.button("Delete This Sale", key="delete_sale_btn", help="Delete this sale", use_container_width=True):
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM Sales WHERE sale_id=%s", (selected_sid,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            st.success("Sales record deleted!")
+            st.experimental_rerun()
+else:
+    # ----------------------
+    # Sales Transactions Table (only if raw data is not shown)
 # ----------------------
 st.markdown("### 📋 Sales Transactions")
 if filtered_sales.empty:
@@ -112,6 +314,43 @@ else:
         filtered_sales[['sale_id', 'sales_date', 'Name', 'quantity_sold', 'revenue', 'profit', 'shipped', 'payment_received']],
         use_container_width=True
     )
+
+# ----------------------
+# Sales by Product (Donut/Pie Chart + Ranked Table)
+# ----------------------
+st.markdown("---")
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'>🥇 Product Sales Share</div>", unsafe_allow_html=True)
+trend_products = st.multiselect("Select Products for Chart", filtered_sales['Name'].unique(), default=list(filtered_sales['Name'].unique())[:3], key="trend_products")
+trend_df = filtered_sales[filtered_sales['Name'].isin(trend_products)]
+if not trend_df.empty:
+    pie_df = trend_df.groupby('Name')['quantity_sold'].sum().reset_index().sort_values(by='quantity_sold', ascending=False)
+    top_pie = pie_df.iloc[0]['Name'] if not pie_df.empty else None
+    st.markdown(f"<div style='font-size:1.08rem;color:#2563eb;margin-bottom:0.7rem;'>Top seller: <b>{top_pie}</b> ({int(pie_df.iloc[0]['quantity_sold'])} sold)</div>", unsafe_allow_html=True)
+    fig_pie = px.pie(pie_df, names='Name', values='quantity_sold', hole=0.45, color_discrete_sequence=px.colors.sequential.Blues, title="")
+    fig_pie.update_traces(textinfo='percent+label')
+    fig_pie.update_layout(showlegend=True, template='plotly_white')
+    st.plotly_chart(fig_pie, use_container_width=True)
+    # Ranked table with color-coded sales
+    styled_table = pie_df.style.background_gradient(cmap='Blues', subset=['quantity_sold'])
+    st.markdown('<div style="margin-top:1.2rem;font-weight:600;">Ranked Product Sales</div>', unsafe_allow_html=True)
+    st.dataframe(styled_table, use_container_width=True)
+else:
+    st.info("No data for selected products.")
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ----------------------
+# Profitability by Category
+# ----------------------
+st.markdown("---")
+st.markdown("### 💸 Profitability by Category")
+if 'category' in filtered_sales.columns:
+    cat_profit = filtered_sales.groupby('category')['profit'].sum().reset_index()
+    fig_cat = px.bar(cat_profit, x='category', y='profit', color='profit', color_continuous_scale='Oranges', title="Profit by Category")
+    fig_cat.update_layout(xaxis_title="Category", yaxis_title="Profit", template='plotly_white')
+    st.plotly_chart(fig_cat, use_container_width=True)
+else:
+    st.info("No category data available.")
 
 # ----------------------
 # Top Selling Products
