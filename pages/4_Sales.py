@@ -93,7 +93,7 @@ st.markdown("""
 }
 .kpi-section-title {
     font-size: 1.45rem;
-    font-weight: 800;
+    font-weight: 600;
     color: #1e293b;
     margin-bottom: 2.2rem;
     letter-spacing: 0.5px;
@@ -209,7 +209,7 @@ if payment_filter != "All":
 # ----------------------
 avg_order_value = filtered_sales['revenue'].sum() / len(filtered_sales) if len(filtered_sales) > 0 else 0
 st.markdown("<div style='max-width:900px;margin:0 auto 2.5rem auto;'>", unsafe_allow_html=True)
-st.markdown("<div class='kpi-section-title'>Key Metrics</div>", unsafe_allow_html=True)
+st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:4.5rem;'>Key Metrics</div>", unsafe_allow_html=True)
 k1, k2, k3, k4 = st.columns(4)
 with k1:
     st.markdown(f"""

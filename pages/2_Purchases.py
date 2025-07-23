@@ -118,6 +118,13 @@ st.markdown("""
         font-weight: 800;
         color: #000;
     }
+    .kpi-section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.1rem;
+        text-align: center;
+        color: #1E293B;
+    }
     .section-title {
         font-size: 1.25rem;
         font-weight: 700;
@@ -165,6 +172,8 @@ total_orders = len(purchases)
 total_quantity = purchases['quantity_purchased'].sum()
 total_cost = (purchases['quantity_purchased'] * purchases['cost_price']).sum()
 vendors = purchases['vendor_name'].nunique()
+
+st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:1rem;'>Key Metrics</div>", unsafe_allow_html=True)
 
 # --- KPI CARDS ---
 k1, k2, k3, k4 = st.columns(4)

@@ -101,7 +101,7 @@ st.markdown("""
     }
     .kpi-section-title {
         font-size: 1.25rem;
-        font-weight: 700;
+        font-weight: 600;
         margin-bottom: 1.1rem;
         text-align: center;
         color: #1E293B;
@@ -168,7 +168,7 @@ if search_term:
 # Key Metrics (Light Card Format, Even Row, 4 KPIs)
 # -------------------------
 st.markdown("<div style='max-width:900px;margin:0 auto 2.5rem auto;'>", unsafe_allow_html=True)
-st.markdown("<div class='kpi-section-title'>Key Metrics</div>", unsafe_allow_html=True)
+st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:4.5rem;'>Key Metrics</div>", unsafe_allow_html=True)
 k1, k2, k3, k4 = st.columns(4)
 with k1:
     st.markdown(f"""

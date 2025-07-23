@@ -206,7 +206,7 @@ try:
     <style>
     .kpi-section-title {
         font-size: 1.45rem;
-        font-weight: 800;
+        font-weight: 600;
         color: #1e293b;
         margin-bottom: 2.2rem;
         letter-spacing: 0.5px;
@@ -237,7 +237,7 @@ try:
     .kpi-card-light .kpi-value {
         font-size: 2rem;
         font-weight: 800;
-        color: #f59e42 !important;
+        color: #000 !important;
         display: inline;
         margin-top: 0;
         white-space: nowrap;
@@ -245,7 +245,7 @@ try:
     </style>
     """, unsafe_allow_html=True)
     st.markdown("<div style='max-width:1100px;margin:0 auto 2.5rem auto;'>", unsafe_allow_html=True)
-    st.markdown("<div class='kpi-section-title'>Key Metrics</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:4.5rem;'>Key Metrics</div>", unsafe_allow_html=True)
     k1, k2, k3, k4 = st.columns(4)
     total_exp = df['amount'].sum()
     fixed_exp = df[df['TYPE']=='Fixed']['amount'].sum()

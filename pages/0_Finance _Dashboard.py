@@ -10,6 +10,7 @@ st.markdown("""
     body {background-color: #F8FAFC;}
     section[data-testid="stSidebar"] {background-color: #0F172A;}
     [data-testid="stSidebar"] * {color: #fff !important;}
+    .kpi-section-title {font-size: 1.25rem;font-weight: 600;margin-bottom: 1.1rem;text-align: center; color: #1E293B;}
     .kpi-card-home {background: #fff; color: #0F172A; border-radius: 18px; box-shadow: 0 4px 16px rgba(30,41,59,0.10); flex: 1; padding: 1.7rem 1.2rem 1.2rem 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 180px; max-width: 300px; margin-bottom: 1.5rem;}
     .kpi-card-home .icon {font-size: 2.2rem; margin-bottom: 0.7rem;}
     .kpi-card-home .label {font-size: 1.1rem; font-weight: 600; margin-bottom: 0.2rem; color: #475569;}
@@ -114,6 +115,9 @@ conn = get_connection()
 products = pd.read_sql("SELECT * FROM Products", conn)
 sales = pd.read_sql("SELECT * FROM Sales", conn)
 purchases = pd.read_sql("SELECT * FROM Purchases", conn)
+
+st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:2.5rem;'>Key Metrics</div>", unsafe_allow_html=True)
+
 
 # --- KPI Cards ---
 total_sales = (sales['quantity_sold'] * sales['selling_price']).sum()
@@ -291,7 +295,7 @@ with vendor_tab:
     st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
 
 # --- Inventory Holding Costs & DIO ---
-st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative:top:-40px;'>Inventory Holding Costs & DIO</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500;position:relative;top:-40px;'>Inventory Holding Costs & DIO</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 with col4:
     st.markdown(f"""
