@@ -82,9 +82,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("""
     <style>
-    section[data-testid="stSidebar"] .st.sidebar.date_input {
+    section[data-testid="stSidebar"] .stDateInput input {
         color:#000 !important;
-        backgroung-color: #fff !important;
+        background-color: #fff !important;
     }
     <style>
 """,unsafe_allow_html=True)
