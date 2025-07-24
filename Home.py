@@ -65,7 +65,7 @@ def show_features():
             margin-bottom: 2.5rem;
         }
         .hero-illustration {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             margin-bottom: 1.2rem;
             filter: drop-shadow(0 4px 16px rgba(37,99,235,0.10));
         }
@@ -113,7 +113,7 @@ def show_features():
     st.markdown("""
         <div class='landing-bg'>
             <div class='landing-hero'>
-                <div class='hero-illustration'>🛒📦📈</div>
+                <div class='hero-illustration'>🛒📦💸</div>
                 <div style='font-size:1.35rem;font-weight:700;color:#1E293B;margin-bottom:2.2rem;'>Why Choose Retail Pulse?</div>
                 <div class='features-row'>
                     <div class='feature-card'>
