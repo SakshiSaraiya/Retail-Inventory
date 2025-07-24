@@ -80,6 +80,14 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+    <style>
+    section[data-testid="stSidebar"] .stDateInput {
+        color:#000 !important;
+        backgroung-color: #fff !important;
+    }
+    <style>
+""",unsafe_allow_html=True)
 
 # --- GLOBAL STYLES FOR ZOHO-LIKE LOOK ---
 st.markdown("""
