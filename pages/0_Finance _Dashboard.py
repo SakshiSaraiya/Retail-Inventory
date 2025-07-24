@@ -124,7 +124,7 @@ purchases['payment_status'] = purchases['payment_status'].astype(str)
 receivables = sales[sales['payment_received'] == 0]['quantity_sold'] * sales[sales['payment_received'] == 0]['selling_price']
 receivables = receivables.sum() if not sales.empty else 0
 
-st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:0rem;'>Key Metrics</div>", unsafe_allow_html=True)
+st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:0rem;top:-50px;'>Key Metrics</div>", unsafe_allow_html=True)
 
 
 # --- KPI Cards ---
