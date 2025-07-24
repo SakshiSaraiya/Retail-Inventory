@@ -187,7 +187,7 @@ try:
                     cursor.close()
                     conn.close()
                     st.success("Expense record updated!")
-                    st.experimental_rerun()
+                    st.rerun()
         elif action == "Delete":
             if st.button("Delete This Record", key="delete_expense_btn", help="Delete this record", use_container_width=True):
                 conn = get_connection()
@@ -199,7 +199,7 @@ try:
                 cursor.close()
                 conn.close()
                 st.success("Expense record deleted!")
-                st.experimental_rerun()
+                st.rerun()
 
     # --- KPI Cards (Sales-Style, 4 Even Cards, Centered Title, st.columns layout, ₹ and value truly side by side) ---
     st.markdown("""
@@ -236,7 +236,7 @@ try:
     }
     .kpi-card-light .kpi-value {
         font-size: 2rem;
-        font-weight: 800;
+        font-weight: 600;
         color: #000 !important;
         display: inline;
         margin-top: 0;

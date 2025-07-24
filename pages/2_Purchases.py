@@ -115,7 +115,7 @@ st.markdown("""
     }
     .kpi-value {
         font-size: 2rem;
-        font-weight: 800;
+        font-weight: 600;
         color: #000;
     }
     .kpi-section-title {
@@ -151,8 +151,13 @@ st.markdown("""
 # --- MAIN CONTENT WRAPPER ---
 
 # --- PAGE TITLE ---
-st.markdown("<div class='section-title'<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-60px;'>Purchase Overview</div>", unsafe_allow_html=True)
-
+st.markdown("<div class='section-title'<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-50px;'>Purchase Overview</div>", unsafe_allow_html=True)
+st.markdown(
+    "<div style='font-size:1.1rem; color:#475569;position:relative;left:-30px;top:-70px;'>"
+    "Track, analyze, and manage all your purchase orders, vendor payments, and inventory inflow from this page."
+    "</div>",
+    unsafe_allow_html=True
+)
 # -------------------------
 # Connect to SQL
 # -------------------------
@@ -220,7 +225,7 @@ if show_raw:
                 cursor.close()
                 conn.close()
                 st.success("Purchase record updated!")
-                st.experimental_rerun()
+                st.rerun()
     elif action == "Delete":
         if st.button("Delete This Record", key="delete_btn", help="Delete this record", use_container_width=True):
             conn = get_connection()
@@ -230,7 +235,7 @@ if show_raw:
             cursor.close()
             conn.close()
             st.success("Purchase record deleted!")
-            st.experimental_rerun()
+            st.erun()
 
 # -------------------------
 # Sidebar Filters

@@ -116,6 +116,14 @@ products = pd.read_sql("SELECT * FROM Products", conn)
 sales = pd.read_sql("SELECT * FROM Sales", conn)
 purchases = pd.read_sql("SELECT * FROM Purchases", conn)
 
+# After loading sales and purchases DataFrames
+sales['payment_received'] = sales['payment_received'].astype(int)
+purchases['payment_status'] = purchases['payment_status'].astype(str)
+
+# Calculate Accounts Receivable before Key Metrics
+receivables = sales[sales['payment_received'] == 0]['quantity_sold'] * sales[sales['payment_received'] == 0]['selling_price']
+receivables = receivables.sum() if not sales.empty else 0
+
 st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:2.5rem;'>Key Metrics</div>", unsafe_allow_html=True)
 
 
@@ -188,11 +196,56 @@ with k5:
 with k6:
     st.markdown(f"""
         <div class='kpi-card-home'>
-            <div class='icon'>📦</div>
-            <div class='label'>DIO</div>
-            <div class='value'>{DIO:.1f} Days</div>
+            <div class='icon'>💳</div>
+            <div class='label'>Accounts Receivable</div>
+            <div class='value'>₹ {receivables:,.2f}</div>
         </div>
     """, unsafe_allow_html=True)
+
+# --- Ratio Analysis Section ---
+st.markdown("<div class='kpi-section-title' style='text-align:left;position:relative;margin-bottom:2.5rem;font-size:2.0rem;color:#0F172A;font-weight:500;'>Ratio Analysis</div>", unsafe_allow_html=True)
+st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+# Receivables: sales where payment_received == 0
+# receivables = sales[sales['payment_received'] == 0]['quantity_sold'] * sales[sales['payment_received'] == 0]['selling_price']
+# receivables = receivables.sum() if not sales.empty else 0
+
+# Inventory value
+inventory_value = live_stock['holding_cost'].sum() if not live_stock.empty else 0
+
+# Current Assets
+cash = 0  # Update if you have cash data
+current_assets = cash + receivables + inventory_value
+
+# Current Liabilities: purchases where payment_status == 'Pending'
+current_liabilities = purchases[purchases['payment_status'].str.lower() == 'pending']['quantity_purchased'] * purchases[purchases['payment_status'].str.lower() == 'pending']['cost_price']
+current_liabilities = current_liabilities.sum() if not purchases.empty else 0
+
+# Quick Assets
+quick_assets = cash + receivables
+
+# Ratios
+current_ratio = current_assets / current_liabilities if current_liabilities else 0
+quick_ratio = quick_assets / current_liabilities if current_liabilities else 0
+gross_margin = (gross_profit / total_sales) * 100 if total_sales else 0
+net_profit = total_sales - total_expenses
+net_margin = (net_profit / total_sales) * 100 if total_sales else 0
+# Calculate Accounts Payable
+accounts_payable = purchases[purchases['payment_status'].str.lower() == 'pending']['quantity_purchased'] * purchases[purchases['payment_status'].str.lower() == 'pending']['cost_price']
+accounts_payable = accounts_payable.sum() if not purchases.empty else 0
+
+# Display
+r1, r2, r3, r4, r5 = st.columns(5)
+with r1:
+    st.metric("Current Ratio", f"{current_ratio:.2f}")
+with r2:
+    st.metric("Quick Ratio", f"{quick_ratio:.2f}")
+with r3:
+    st.metric("Gross Profit Margin", f"{gross_margin:.2f}%")
+with r4:
+    st.metric("Net Profit Margin", f"{net_margin:.2f}%")
+with r5:
+    st.metric("Accounts Payable", f"₹ {accounts_payable:,.2f}")
 
 # --- Category-wise Profitability ---
 merged = pd.merge(sales, products[['product_id', 'NAME', 'category', 'cost_price']], on='product_id', how='left')
@@ -200,7 +253,7 @@ merged['Revenue'] = merged['quantity_sold'] * merged['selling_price']
 merged['Cost'] = merged['quantity_sold'] * merged['cost_price']
 merged['Profit'] = merged['Revenue'] - merged['Cost']
 category_profit = merged.groupby('category')[['Revenue', 'Cost', 'Profit']].sum().reset_index()
-fig_cat = px.bar(category_profit, x='category', y='Profit', color='category', title="Category-wise Profitability", color_discrete_sequence=px.colors.qualitative.Vivid)
+fig_cat = px.bar(category_profit, x='category', y='Profit', color='category', title="Category-wise Profitability", color_discrete_sequence=px.colors.qualitative.Pastel)
 fig_cat.update_layout(
     paper_bgcolor='#fff', plot_bgcolor='#fff', margin=dict(l=20, r=20, t=40, b=20),
     font=dict(size=16, color='#1a2233'),
@@ -246,11 +299,12 @@ fig_bar.update_layout(
 )
 
 # --- Supplier Payment Simulation ---
+pastel_colors = ["#A3C1DA", "#F7CAC9", "#B5EAD7", "#FFDAC1", "#E2F0CB", "#CBAACB", "#FFB7B2", "#B5EAD7"]
 purchases['outstanding'] = purchases.apply(lambda x: x['quantity_purchased'] * x['cost_price'] if x['payment_status'].lower() == 'pending' else 0, axis=1)
 supplier_outstanding = purchases.groupby('vendor_name')['outstanding'].sum().reset_index()
 supplier_outstanding = supplier_outstanding[supplier_outstanding['outstanding'] > 0]
 if not supplier_outstanding.empty:
-    fig_out = px.pie(supplier_outstanding, names='vendor_name', values='outstanding', title='Pending Payments to Vendors', color_discrete_sequence=px.colors.sequential.Plasma)
+    fig_out = px.pie(supplier_outstanding, names='vendor_name', values='outstanding', title='Pending Payments to Vendors', color_discrete_sequence=pastel_colors)
     fig_out.update_layout(
         paper_bgcolor='#fff', plot_bgcolor='#fff', margin=dict(l=20, r=20, t=40, b=20),
         font=dict(size=16, color='#1a2233'),

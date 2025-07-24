@@ -96,7 +96,7 @@ st.markdown("""
     }
     .kpi-card-light .kpi-value {
         font-size: 2rem;
-        font-weight: 800;
+        font-weight: 600;
         color: #000;
     }
     .kpi-section-title {
@@ -110,7 +110,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-40px;'>Inventory Overview</h2>", unsafe_allow_html=True)
-
+st.markdown(
+    "<div style='font-size:1.1rem; color:#475569; margin-bottom:-8.5rem;position:relative;left:-30px;top:-50px;'>"
+    "Monitor current stock levels, analyze inventory trends, and manage product availability efficiently from this page."
+    "</div>",
+    unsafe_allow_html=True
+)
 # -------------------------
 # Load data
 # -------------------------
@@ -199,7 +204,6 @@ with k4:
         </div>
     """, unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
-
 # -------------------------
 # Product Table
 # -------------------------
@@ -235,7 +239,7 @@ if show_raw_products:
                 cursor.close()
                 conn.close()
                 st.success("Product record updated!")
-                st.experimental_rerun()
+                st.rerun()
     elif action == "Delete":
         if st.button("Delete This Product", key="delete_product_btn", help="Delete this product", use_container_width=True):
             conn = get_connection()
@@ -245,8 +249,9 @@ if show_raw_products:
             cursor.close()
             conn.close()
             st.success("Product record deleted!")
-            st.experimental_rerun()
+            st.rerun()
 
+st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 # -------------------------
 # Slow Moving Products (last 30 days)
 # -------------------------
@@ -267,7 +272,7 @@ import io
 csv = filtered.to_csv(index=False).encode('utf-8')
 st.download_button('Download Inventory Report (CSV)', csv, 'inventory_report.csv', 'text/csv')
 st.markdown('</div>', unsafe_allow_html=True)
-
+st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 # -------------------------
 # Inventory Age Analysis (if purchase date available)
 # -------------------------
@@ -279,6 +284,7 @@ if 'order_date' in purchases.columns:
     st.markdown("<div class='section-title'<h1 style='font-size:2.0rem;color:#0F172A;font-weight:500'>Inventory Age Analysis</div>", unsafe_allow_html=True)
     st.dataframe(inventory_age[["product_id", "Name", "category", "days_in_stock"]], use_container_width=True)
 
+st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 # -------------------------
 # Low Stock Alerts with Reorder Action
 # -------------------------

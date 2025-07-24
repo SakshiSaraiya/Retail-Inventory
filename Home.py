@@ -5,8 +5,22 @@ import pandas as pd
 import plotly.express as px
 from db import get_connection, fetch_data, execute_query
 
+
+if st.session_state.get("scroll_to_top", False):
+    st.markdown(
+        """
+        <script>
+        setTimeout(function() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 500);
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+    st.session_state["scroll_to_top"] = False
+
 # --- Branding with Logo (always visible) ---
-st.markdown("<div style='text-align:left;margin-top:-5rem;'><h1 style='font-size:3.0rem;color:#0F172A;font-weight:700;letter-spacing:1px;margin-bottom:0.4rem;position:relative;left:-170px;bottom:-30px;'>Welcome to Retail Pulse</h1><div style='font-size:1.15rem;color:#475569;margin-bottom:1.5rem;font-weight:400;position:relative;left:-170px'>Insightful Retail & Smarter Decisions.</div></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:left;margin-top:-5rem;'><h1 style='font-size:3.0rem;color:#0F172A;font-weight:700;letter-spacing:1px;margin-bottom:0.4rem;position:relative;left:-170px;bottom:-30px;'>Welcome to Retail Pulse</h1><div style='font-size:1.15rem;color:#475569;margin-bottom:1.5rem;font-weight:400;position:relative;left:-160px;top:10px;'>Insightful Retail & Smarter Decisions.</div></div>", unsafe_allow_html=True)
 
 # --- Custom CSS for dark sidebar/light main ---
 st.markdown("""
@@ -113,9 +127,9 @@ def show_features():
                         <div class='desc'>Visual dashboards for revenue and trends.</div>
                     </div>
         <div class='feature-card'>
-                        <div class='icon'>📈</div>
-                        <div class='title'>Smart Forecasting</div>
-                        <div class='desc'>Predict demand and optimize inventory costs.</div>
+                        <div class='icon'>💸</div>
+                        <div class='title'>Expense Tracking</div>
+                        <div class='desc'>Monitor and control your business expenses efficiently.</div>
                     </div>
                 </div>
             </div>
@@ -279,7 +293,7 @@ def show_dashboard():
                 execute_query(query, (user_id, name, category, cost_price, selling_price, stock))
                 st.success("Product added successfully!")
                 st.session_state["show_add_product"] = False
-                st.experimental_rerun()
+                st.rerun()
 
     # --- Add Purchase Form ---
     if st.session_state.get("show_add_purchase"):
@@ -301,7 +315,7 @@ def show_dashboard():
                 execute_query(query, (user_id, product_id, vendor_name, quantity_purchased, cost_price, order_date, payment_due, payment_status))
                 st.success("Purchase added successfully!")
                 st.session_state["show_add_purchase"] = False
-                st.experimental_rerun()
+                st.rerun()
 
     # --- Add Sale Form ---
     if st.session_state.get("show_add_sale"):
@@ -315,14 +329,16 @@ def show_dashboard():
             payment_received = st.selectbox("Payment Received", ["Yes", "No"])
             submit = st.form_submit_button("Submit Sale")
             if submit:
+                shipped_value = 1 if shipped == "Yes" else 0
+                payment_received_value = 1 if payment_received == "Yes" else 0
                 query = """
                     INSERT INTO Sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
-                execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received))
+                execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped_value, payment_received_value))
                 st.success("Sale added successfully!")
                 st.session_state["show_add_sale"] = False
-                st.experimental_rerun()
+                st.rerun()
 
     # --- Tips & Insights Card ---
     st.markdown("""
@@ -345,13 +361,16 @@ def show_auth():
         username_or_email = st.text_input("Username or Email")
         password = st.text_input("Password", type="password", key="login_password")
         login_submit = st.button("Login")
+        st.session_state["scroll_to_top"] = False
         if login_submit:
             success, user_id = login_user(username_or_email, password)
             if success:
                 st.session_state["is_logged_in"] = True
                 st.session_state["user_id"] = user_id
-                st.success("Login successful!")
+                st.session_state["scroll_to_top"] = True
                 st.rerun()
+                st.success("Login successful!")
+
             else:
                 st.error("Invalid credentials. Please try again.")
     with register_tab:

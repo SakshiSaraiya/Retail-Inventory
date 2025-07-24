@@ -138,14 +138,17 @@ with col6:
             selling_price = st.number_input("Selling Price", min_value=0.0)
             sale_date = st.date_input("Sale Date")
             shipped = st.selectbox("Shipped", ["Yes", "No"])
+            shipped_value = 1 if shipped == "Yes" else 0
             payment_received = st.selectbox("Payment Received", ["Yes", "No"])
+            payment_received_value = 1 if payment_received == "Yes" else 0
+
             submit = st.form_submit_button("Add Sale")
             if submit:
                 query = """
                      INSERT INTO Sales (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
-                execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped, payment_received))
+                execute_query(query, (user_id, product_id, quantity_sold, selling_price, sale_date, shipped_value, payment_received_value))
                 st.success("Sale added successfully!")
 
 

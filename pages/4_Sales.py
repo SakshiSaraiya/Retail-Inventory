@@ -88,7 +88,7 @@ st.markdown("""
 }
 .kpi-card-light .kpi-value {
     font-size: 2rem;
-    font-weight: 800;
+    font-weight: 400;
     color: #f59e42;
 }
 .kpi-section-title {
@@ -141,7 +141,7 @@ st.markdown("""
     min-height: 90px;
     margin-bottom: 1.5rem;
     position: relative;
-    top: -60px;
+    top: -80px;
 }
 .kpi-card-light .kpi-label {
     font-size: 1.1rem;
@@ -150,15 +150,20 @@ st.markdown("""
     margin-bottom: 0.2rem;
 }
 .kpi-card-light .kpi-value {
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 1.75rem;
+    font-weight: 600;
     color: #000;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-40px;'>Sales Overview</h2>", unsafe_allow_html=True)
-
+st.markdown("<h1 style='font-size:2.5rem;color:#0F172A;font-weight:700;position:relative;left:-30px;top:-70px;'>Sales Overview</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<div style='font-size:1.1rem; color:#475569;margin-bottom:-10.5rem;position:relative;left:-30px;top:-70px;'>"
+    "Review sales performance, track order fulfillment, and gain insights into your revenue trends on this page."
+    "</div>",
+    unsafe_allow_html=True
+)
 conn = get_connection()
 
 try:
@@ -186,6 +191,34 @@ sales['profit'] = sales['quantity_sold'] * (sales['selling_price'] - sales['cost
 # ----------------------
 # Sidebar Filters
 # ----------------------
+st.markdown("""
+    <style>
+    /* Force black text for selectbox and multiselect in sidebar */
+    section[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] * {
+        color: #000 !important;
+        border-radius: 12px !important;
+    }
+    /* Also target placeholder text */
+    section[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] [class*="Placeholder"] {
+        color: #000 !important;
+        opacity: 1 !important;
+    }
+    section[data-testid="stSidebar"] .stMultiSelect div[data-baseweb="select"] [class*="Placeholder"] {
+        color: #000 !important;
+        opacity: 1 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+st.markdown("""
+    <style>
+    section[data-testid="stSidebar"] .stDateInput input {
+        color: #000 !important;
+        background-color: #fff !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
 st.sidebar.header("🔍 Filter Sales")
 product_filter = st.sidebar.multiselect("Product", sales['Name'].dropna().unique(), default=sales['Name'].dropna().unique())
 shipped_filter = st.sidebar.selectbox("Shipped Status", ["All"] + sorted(sales['shipped'].dropna().unique().tolist()))
@@ -209,7 +242,7 @@ if payment_filter != "All":
 # ----------------------
 avg_order_value = filtered_sales['revenue'].sum() / len(filtered_sales) if len(filtered_sales) > 0 else 0
 st.markdown("<div style='max-width:900px;margin:0 auto 2.5rem auto;'>", unsafe_allow_html=True)
-st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:4.5rem;'>Key Metrics</div>", unsafe_allow_html=True)
+st.markdown("<div class='kpi-section-title'style='text-align:left;position:relative;margin-bottom:4.5rem;top:-30px;'>Key Metrics</div>", unsafe_allow_html=True)
 k1, k2, k3, k4 = st.columns(4)
 with k1:
     st.markdown(f"""
@@ -282,20 +315,20 @@ if show_raw_sales:
             quantity_sold = st.number_input("Quantity Sold", min_value=1, value=int(row['quantity_sold']))
             selling_price = st.number_input("Selling Price", min_value=0.0, value=float(row['selling_price']))
             sale_date = st.date_input("Sale Date", value=row['sale_date'])
-            shipped = st.selectbox("Shipped", ["Yes", "No"], index=["Yes", "No"].index(row['shipped']) if row['shipped'] in ["Yes", "No"] else 0)
-            payment_received = st.selectbox("Payment Received", ["Yes", "No"], index=["Yes", "No"].index(row['payment_received']) if row['payment_received'] in ["Yes", "No"] else 0)
+            shipped_value = st.selectbox("Shipped", ["Yes", "No"], index=0 if row['shipped'] == 1 else 1)
+            payment_received = st.selectbox("Payment Received",["Yes", "No"],index=0 if row['payment_received'] == 1 else 1) 
             submit = st.form_submit_button("Save Changes")
             if submit:
                 conn = get_connection()
                 cursor = conn.cursor()
                 cursor.execute("""
                     UPDATE Sales SET product_id=%s, quantity_sold=%s, selling_price=%s, sale_date=%s, shipped=%s, payment_received=%s WHERE sale_id=%s
-                """, (product_id, quantity_sold, selling_price, sale_date, shipped, payment_received, selected_sid))
+                """, (product_id, quantity_sold, selling_price, sale_date, shipped_value, payment_received, selected_sid))
                 conn.commit()
                 cursor.close()
                 conn.close()
                 st.success("Sales record updated!")
-                st.experimental_rerun()
+                st.rerun()
     elif action == "Delete":
         if st.button("Delete This Sale", key="delete_sale_btn", help="Delete this sale", use_container_width=True):
             conn = get_connection()
@@ -305,7 +338,7 @@ if show_raw_sales:
             cursor.close()
             conn.close()
             st.success("Sales record deleted!")
-            st.experimental_rerun()
+            st.rerun()
 else:
     # ----------------------
     # Sales Transactions Table (only if raw data is not shown)
