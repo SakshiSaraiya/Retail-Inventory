@@ -20,7 +20,7 @@ if st.session_state.get("scroll_to_top", False):
     st.session_state["scroll_to_top"] = False
 
 # --- Branding with Logo (always visible) ---
-st.markdown("<div style='text-align:left;margin-top:-5rem;'><h1 style='font-size:3.0rem;color:#0F172A;font-weight:700;letter-spacing:1px;margin-bottom:0.4rem;position:relative;left:-170px;bottom:-30px;'>Welcome to Retail Pulse</h1><div style='font-size:1.15rem;color:#475569;margin-bottom:1.5rem;font-weight:400;position:relative;left:-160px;top:10px;'>Insightful Retail & Smarter Decisions.</div></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:left;margin-top:-5rem;'><h1 style='font-size:3.0rem;color:#0F172A;font-weight:700;letter-spacing:1px;margin-bottom:0.4rem;position:relative;left:-150px;bottom:-30px;'>Welcome to Retail Pulse</h1><div style='font-size:1.15rem;color:#475569;margin-bottom:1.5rem;font-weight:400;position:relative;left:-160px;top:10px;'>Insightful Retail & Smarter Decisions.</div></div>", unsafe_allow_html=True)
 
 # --- Custom CSS for dark sidebar/light main ---
 st.markdown("""
