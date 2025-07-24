@@ -114,7 +114,7 @@ st.markdown("""
         margin-bottom: 0.2rem;
     }
     .kpi-value {
-        font-size: 2rem;
+        font-size: 1.75rem;
         font-weight: 500;
         color: #000;
     }
