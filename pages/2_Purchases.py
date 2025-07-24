@@ -115,7 +115,7 @@ st.markdown("""
     }
     .kpi-value {
         font-size: 1.75rem;
-        font-weight: 500;
+        font-weight: 600;
         color: #000;
     }
     .kpi-section-title {
