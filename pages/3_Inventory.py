@@ -22,6 +22,14 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+    <style>
+    section[data-testid="stSidebar"] .stTextInput input {
+        color:#000 !important;
+        background-color: #fff !important;
+    }
+    <style>
+""",unsafe_allow_html=True)
 # -------------------------
 # Custom Styling
 # -------------------------
